@@ -32,197 +32,52 @@ but very different fraud rates.
 9. The system stores the decision and publishes outcomes through a durable outbox.
 
 ```mermaid
-flowchart TB
-    classDef user fill:#E8F1FF,stroke:#2563EB,color:#0F172A,stroke-width:1.5px
-    classDef service fill:#E6FFFB,stroke:#0F766E,color:#0F172A,stroke-width:1.5px
-    classDef model fill:#F3E8FF,stroke:#7E22CE,color:#0F172A,stroke-width:1.5px
-    classDef safety fill:#FFF1F2,stroke:#BE123C,color:#0F172A,stroke-width:1.5px
-    classDef data fill:#FFFBEB,stroke:#B45309,color:#0F172A,stroke-width:1.5px
-    classDef stream fill:#ECFDF5,stroke:#15803D,color:#0F172A,stroke-width:1.5px
-    classDef observe fill:#F1F5F9,stroke:#475569,color:#0F172A,stroke-width:1.5px
+flowchart TD
+  Source[Transaction replay or upstream producer] -->|REST| API[FastAPI Command Center<br/>Auth · REST · WebSocket]
+  Analyst[Analyst / Admin] --> API
+  API --> Tx[Transaction Service<br/>idempotency · persistence · shared features]
+  Tx --> Score[Resilient fraud scoring<br/>XGBoost + calibration<br/>Isolation Forest / rules fallback]
+  Score --> Detect[Risk-density spike detector<br/>event-time windows · EWMA · Poisson]
+  Detect --> Incident[Incident creation<br/>deterministic segment discovery]
+  Incident --> Graph[LangGraph investigation<br/>evidence · root cause · verification · responses]
+  Graph --> LLM[Structured Gemini gateway<br/>3.5 → 3.1 → Gemma 4<br/>typed deterministic fallback]
+  LLM --> Safety[Python evidence grounding<br/>deterministic policy gate]
+  Safety --> Human[Human review<br/>Approve · Modify · Reject · Escalate]
+  Human --> Outcome[Outcome · reward · incident memory]
+  Outcome -. future evidence context .-> Graph
 
-    subgraph EXPERIENCE["Experience and ingress"]
-        direction LR
-        Analyst["Analyst / Admin"]
-        Dashboard["Command Center<br/>REST polling + WebSocket"]
-        Replay["Transaction replay<br/>or upstream producer"]
-        Analyst --> Dashboard
-    end
+  Tx -->|transactions + scores| DB[(PostgreSQL<br/>records · checkpoints · policies · outbox)]
+  Incident -->|incidents + segments| DB
+  Graph -->|evidence + provenance + checkpoints| DB
+  Human -->|decision + audit| DB
+  Outcome -->|reward + memory| DB
 
-    subgraph APPLICATION["FastAPI application"]
-        direction LR
-        API["FastAPI<br/>Auth · REST routes · static frontend"]
-        WS["WebSocket Hub<br/>Live best-effort updates"]
-        TxService["Transaction Service<br/>Idempotent ingestion owner"]
-        IncidentService["Incident Service"]
-        InvestigationService["Investigation Service"]
-        ReviewService["HITL Review Service"]
-        FeedbackService["Outcome / Feedback Service"]
-        EvaluationService["Reward Evaluation Service"]
-        PolicyService["Policy Registry Service<br/>Admin promote / rollback"]
-    end
+  Source -->|Kafka| Stream[(Redpanda event backbone)]
+  Stream -->|EventConsumer: transactions| Tx
+  Stream -->|EventConsumer: outcomes| Outcome
+  Tx -->|direct fraud-score events| Stream
+  Incident -->|direct alert + incident events| Stream
+  DB --> Outbox[Durable Outbox Dispatcher<br/>actions · outcomes · rewards]
+  Outbox --> Stream
 
-    Dashboard -->|authenticated REST| API
-    WS -->|live updates| Dashboard
-    Replay -->|service-token REST| API
-    API --> TxService
-    API --> ReviewService
-    API --> FeedbackService
-    API --> PolicyService
+  Tx -. cache .-> Cache[(Redis cache<br/>bounded local TTL-LRU fallback)]
+  LLM -. validated response cache .-> Cache
 
-    subgraph DETECTION["Fraud scoring and spike detection"]
-        direction LR
-        Features["Shared feature contract<br/>Train / serve parity"]
-        Scorer["Resilient Fraud Scorer"]
-        Primary["XGBoost + isotonic calibration"]
-        Anomaly["Isolation Forest fallback"]
-        Rules["Deterministic rules fallback"]
-        Windows["Event-time sliding windows<br/>120 min / 15 min slide"]
-        Detector["Risk-Density Spike Detector<br/>EWMA · lift · Poisson · persistence"]
-        Segments["Deterministic segment discovery<br/>Depth ≤ 3 · significance filtered"]
+  Training[Offline training<br/>fraud · reward · LinUCB<br/>verified artifacts] --> Score
+  Training -->|response-policy artifact| Graph
+  Training --> MLflow[MLflow experiments]
 
-        Features --> Scorer --> Primary --> Windows
-        Primary -. unavailable .-> Anomaly
-        Anomaly -. unavailable .-> Rules
-        Anomaly --> Windows
-        Rules --> Windows
-        Windows --> Detector --> Segments
-    end
-
-    TxService --> Features
-    Segments --> IncidentService
-    IncidentService -->|schedule investigation| InvestigationService
-    IncidentService -->|alert + incident update| WS
-
-    subgraph INVESTIGATION["Evidence-grounded investigation and authority"]
-        direction LR
-        AgentGraph["LangGraph<br/>Observe · Retrieve · Analyze · Segment<br/>Root cause · Verify · Impact · Respond"]
-        Gateway["Structured LLM Gateway<br/>Schema validation · retry · circuit breaker · cache"]
-        Gemini["Gemini tier routing<br/>3.5 Flash Lite → 3.1 Flash Lite → Gemma 4"]
-        Template["Deterministic template fallback"]
-        Grounding["Python evidence grounding<br/>Unsupported claims fail closed"]
-        PolicyEngine["Deterministic Policy Engine<br/>Allow · approval · deny"]
-        HumanGate["Human review interrupt<br/>Approve · Modify · Reject · Escalate"]
-
-        AgentGraph -->|typed requests| Gateway --> Gemini
-        Gemini -->|structured output| AgentGraph
-        Gateway -. tiers exhausted .-> Template --> AgentGraph
-        AgentGraph --> Grounding --> PolicyEngine --> HumanGate
-    end
-
-    InvestigationService --> AgentGraph
-    HumanGate --> ReviewService
-    ReviewService -->|durable resume| AgentGraph
-    ReviewService -->|decision update| WS
-    FeedbackService -->|audit update| WS
-
-    subgraph DATA["State, cache, and durable checkpoints"]
-        direction LR
-        Postgres[("PostgreSQL<br/>System of record")]
-        Records["Operational records<br/>Txns · scores · incidents · evidence"]
-        Governance["Governance records<br/>Decisions · audit · rewards · policies · outbox"]
-        Checkpointer["LangGraph checkpointer<br/>Postgres durable / in-memory degraded"]
-        CacheService["Cache Service"]
-        Redis[("Redis<br/>Claims · predictions · LLM cache · snapshots")]
-        LocalLRU["Bounded local TTL-LRU fallback"]
-
-        Postgres --- Records
-        Postgres --- Governance
-        Checkpointer --> Postgres
-        CacheService --> Redis
-        Redis -. unavailable .-> LocalLRU
-    end
-
-    TxService -->|commit before detection| Postgres
-    IncidentService --> Postgres
-    InvestigationService -->|evidence + provenance| Postgres
-    ReviewService -->|decision + audit + outbox| Postgres
-    FeedbackService -->|outcome + audit + outbox| Postgres
-    EvaluationService -->|reward + memory + outbox| Postgres
-    AgentGraph --> Checkpointer
-    TxService --> CacheService
-    Gateway --> CacheService
-    Postgres -->|similar incident memories| InvestigationService
-
-    subgraph STREAMING["Redpanda event backbone"]
-        direction LR
-        Producer["Event Producer<br/>Stable event envelopes + trace IDs"]
-        Redpanda[("Redpanda<br/>Kafka-compatible broker")]
-        DetectionTopics["Detection topics<br/>transactions · fraud_scores · spike_alerts · incidents"]
-        DecisionTopics["Decision topics<br/>analyst_actions · outcomes · rewards"]
-        ReservedTopics["Reserved topic contracts<br/>agent_events · responses · alerts"]
-        Consumer["Event Consumer<br/>Active handlers: transactions + outcomes"]
-        Outbox["Outbox Dispatcher<br/>Claim · lease · retry · deduplicated recovery"]
-
-        Producer --> Redpanda --> Consumer
-        Redpanda --- DetectionTopics
-        Redpanda --- DecisionTopics
-        Redpanda --- ReservedTopics
-    end
-
-    Replay -->|Kafka transaction event| Redpanda
-    Consumer -->|transactions| TxService
-    Consumer -->|outcomes| EvaluationService
-    TxService -->|direct fraud score event| Producer
-    IncidentService -->|direct spike + incident events| Producer
-    Postgres -->|pending analyst action / outcome / reward| Outbox
-    Outbox --> Producer
-
-    subgraph LEARNING["Offline learning and controlled model lifecycle"]
-        direction LR
-        Datasets["Train · validation · sealed holdout"]
-        Trainers["Offline trainers<br/>XGBoost · Isolation Forest · Reward RF · LinUCB"]
-        Artifacts["Checksum-verified<br/>model and policy artifacts"]
-        MLflow["MLflow<br/>Experiments and artifacts"]
-        Resolver["Runtime Policy Resolver<br/>Production + shadow candidate"]
-
-        Datasets --> Trainers --> Artifacts
-        Trainers --> MLflow
-        Artifacts --> Resolver
-    end
-
-    Artifacts --> Scorer
-    Resolver --> AgentGraph
-    PolicyService -->|manual gated lifecycle| Postgres
-    Postgres -->|active policy registry| Resolver
-
-    subgraph OBSERVABILITY["Observability and operations"]
-        direction LR
-        Drift["PSI Drift Monitor<br/>Advisory only"]
-        Metrics["Prometheus metric catalog<br/>HTTP · fraud · agents · HITL · ML · stream"]
-        Prometheus["Prometheus<br/>15-second scrape"]
-        AlertRules["Alert rules<br/>Spike · drift · agent · policy · dependency"]
-        Grafana["Grafana<br/>4 provisioned dashboards"]
-        Logs["Structured JSON logs<br/>Correlation / trace IDs"]
-        LangSmith["LangSmith tracing<br/>Conditional investigation traces"]
-
-        Prometheus -->|scrapes /metrics| Metrics
-        Prometheus --> AlertRules
-        Grafana -->|queries| Prometheus
-    end
-
-    TxService --> Drift
-    Drift -. metrics .-> Metrics
-    API -. HTTP + dependency metrics .-> Metrics
-    AgentGraph -. agent + LLM + HITL metrics .-> Metrics
-    Producer -. streaming metrics .-> Metrics
-    API -. JSON stdout .-> Logs
-    InvestigationService -. when enabled .-> LangSmith
-
-    class Analyst,Dashboard,Replay user
-    class API,WS,TxService,IncidentService,InvestigationService service
-    class ReviewService,FeedbackService,EvaluationService,PolicyService service
-    class Features,Scorer,Primary,Anomaly,Rules,Windows,Detector,Segments model
-    class AgentGraph,Gateway,Gemini,Template,Resolver,Trainers,Artifacts model
-    class Grounding,PolicyEngine,HumanGate safety
-    class Postgres,Records,Governance,Checkpointer,CacheService,Redis,LocalLRU data
-    class Producer,Redpanda,DetectionTopics,DecisionTopics,ReservedTopics,Consumer,Outbox stream
-    class Drift,Metrics,Prometheus,AlertRules,Grafana,Logs,LangSmith,MLflow observe
+  Tx -. PSI drift .-> Metrics[Prometheus metrics + alert rules]
+  API -. runtime metrics .-> Metrics
+  Metrics --> Grafana[Grafana dashboards]
+  API -. structured events .-> Logs[JSON logs + trace IDs]
+  Graph -. traces when enabled .-> LangSmith[LangSmith]
 ```
 
-Solid arrows show implemented runtime or data flows. Dotted arrows show fallbacks,
-telemetry, or optional integrations. Language models provide structured analysis;
-only deterministic policy checks and a human reviewer can authorize a response.
+The center column is the live fraud-operations path. Side branches show durable
+state, streaming, caching, offline learning, and observability. Language models
+produce structured analysis; deterministic policy checks and a human reviewer
+remain the only authorization path.
 
 ## Quick start
 
