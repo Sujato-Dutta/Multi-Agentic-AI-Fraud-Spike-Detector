@@ -1,0 +1,44 @@
+{
+  "artifact": "models\\fraud\\fraud_model.joblib",
+  "metrics": {
+    "validation_pr_auc": 0.9852758203763825,
+    "validation_raw_pr_auc": 0.9852758203763825,
+    "validation_calibrated_pr_auc": 0.9852758203763825,
+    "validation_roc_auc": 0.9993987922152422,
+    "validation_raw_roc_auc": 0.9993987922152422,
+    "validation_brier_score": 0.009699512146406642,
+    "fit_rows": 16200,
+    "calibration_rows": 1800,
+    "validation_rows": 6000,
+    "fit_end_timestamp": "2026-05-19T08:00:23",
+    "calibration_start_timestamp": "2026-05-19T08:03:05",
+    "precision_floor": {
+      "threshold": 0.37154513597488403,
+      "precision": 0.9026217228464419,
+      "recall": 0.9796747967479674,
+      "f1": 0.9395711500974657,
+      "false_positives": 26,
+      "false_negatives": 5,
+      "false_positive_cost_inr": 7980.690000000001,
+      "fraud_loss_missed_inr": 5274.459999999846,
+      "total_cost_inr": 13255.149999999849
+    },
+    "cost_optimal": {
+      "threshold": 0.22131933271884918,
+      "precision": 0.8776978417266187,
+      "recall": 0.991869918699187,
+      "f1": 0.9312977099236641,
+      "false_positives": 34,
+      "false_negatives": 2,
+      "false_positive_cost_inr": 11423.659999999998,
+      "fraud_loss_missed_inr": 697.7099999998463,
+      "total_cost_inr": 12121.369999999844
+    },
+    "decision_threshold_score_space": "raw_xgboost_probability",
+    "risk_density_score_space": "rank_preserving_isotonic_probability"
+  },
+  "anomaly": {
+    "path": "models\\fraud\\isolation_forest.joblib",
+    "training_rows": 16733
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "uid": "fraud-agent-health",
+  "title": "Agent Health",
+  "tags": ["fraud", "agents"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Investigations by terminal status",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (status) (increase(fraud_investigations_total[15m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Investigation latency P50 / P95",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(fraud_investigation_latency_seconds_bucket[15m])))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(fraud_investigation_latency_seconds_bucket[15m])))",
+          "legendFormat": "p95",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Model calls by tier and status",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "expr": "sum by (tier, status) (increase(fraud_llm_calls_total[15m]))",
+          "legendFormat": "{{tier}} {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Tier and deterministic fallbacks",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
+      "targets": [
+        {
+          "expr": "sum by (from_tier, to_tier) (increase(fraud_llm_fallbacks_total[15m]))",
+          "legendFormat": "{{from_tier}} -> {{to_tier}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Evidence grounding outcomes",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum by (outcome) (increase(fraud_grounding_claims_total[15m]))",
+          "legendFormat": "{{outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Model token usage and estimated cost",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum by (direction) (increase(fraud_llm_tokens_total[15m]))",
+          "legendFormat": "{{direction}} tokens",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(increase(fraud_llm_estimated_cost_total[15m]))",
+          "legendFormat": "estimated cost",
+          "refId": "B"
+        }
+      ]
+    }
+  ]
+}

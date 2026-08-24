@@ -1,0 +1,47 @@
+{
+  "dataset_name": "Multi-Agentic AI Fraud Spike Detector Synthetic Benchmark",
+  "version": "1.0",
+  "seed": 20260822,
+  "total_transactions": 30000,
+  "split_strategy": "strict chronological split; no random shuffling across time",
+  "train": {
+    "date_range": "2026-04-01 to 2026-05-24",
+    "stats": {
+      "rows": 18000,
+      "fraud_count": 540,
+      "fraud_rate": 0.03,
+      "attack_injected_rows": 800,
+      "fraud_rate_within_injected_attack_rows": 0.29125
+    }
+  },
+  "validation": {
+    "date_range": "2026-05-25 to 2026-06-11",
+    "stats": {
+      "rows": 6000,
+      "fraud_count": 246,
+      "fraud_rate": 0.041,
+      "attack_injected_rows": 380,
+      "fraud_rate_within_injected_attack_rows": 0.373684
+    }
+  },
+  "test": {
+    "date_range": "2026-06-12 to 2026-06-29",
+    "stats": {
+      "rows": 6000,
+      "fraud_count": 273,
+      "fraud_rate": 0.0455,
+      "attack_injected_rows": 600,
+      "fraud_rate_within_injected_attack_rows": 0.298333
+    }
+  },
+  "fraud_spike_events": {
+    "train": 3,
+    "validation": 2,
+    "test": 3
+  },
+  "benign_high_volume_events": {
+    "train": 2,
+    "validation": 1,
+    "test": 2
+  }
+}

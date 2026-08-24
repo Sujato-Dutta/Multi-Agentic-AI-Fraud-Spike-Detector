@@ -1,0 +1,196 @@
+/* Motion library. Every animation is decorative; no state depends on it completing. */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translate3d(-22px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translate3d(22px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes ticker-row-in {
+  from { opacity: 0; transform: translate3d(0, -100%, 0); background-color: var(--accent-dim); }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: none; background-color: transparent; }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.9; }
+  70% { box-shadow: 0 0 0 9px transparent; opacity: 0.4; }
+  100% { box-shadow: 0 0 0 0 transparent; opacity: 0.9; }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  from { background-position: -220% 0; }
+  to { background-position: 220% 0; }
+}
+
+@keyframes aurora-drift {
+  0% { transform: translate3d(-4%, -2%, 0) scale(1.05) rotate(0deg); }
+  33% { transform: translate3d(3%, 3%, 0) scale(1.12) rotate(4deg); }
+  66% { transform: translate3d(-2%, 4%, 0) scale(1.08) rotate(-3deg); }
+  100% { transform: translate3d(-4%, -2%, 0) scale(1.05) rotate(0deg); }
+}
+
+@keyframes grid-pan {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 68px 68px, 68px 68px; }
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-120%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes stage-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes alert-flash {
+  0% { box-shadow: var(--shadow-glow-critical); }
+  100% { box-shadow: var(--shadow-md); }
+}
+
+@keyframes count-flip {
+  0% { transform: translateY(0); }
+  45% { transform: translateY(-38%); opacity: 0.25; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Utilities ---------------------------------------------------------------- */
+
+.anim-rise { animation: rise-in var(--dur-slow) var(--ease-out) both; }
+.anim-fade { animation: fade-in var(--dur-base) var(--ease-out) both; }
+.anim-scale { animation: scale-in var(--dur-base) var(--ease-spring) both; }
+.anim-left { animation: slide-in-left var(--dur-slow) var(--ease-out) both; }
+.anim-right { animation: slide-in-right var(--dur-slow) var(--ease-out) both; }
+
+/* Staggered reveals: set on a container to cascade its children. */
+.stagger > * { animation: rise-in var(--dur-slow) var(--ease-out) both; }
+.stagger > *:nth-child(1) { animation-delay: 40ms; }
+.stagger > *:nth-child(2) { animation-delay: 90ms; }
+.stagger > *:nth-child(3) { animation-delay: 140ms; }
+.stagger > *:nth-child(4) { animation-delay: 190ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 290ms; }
+.stagger > *:nth-child(7) { animation-delay: 340ms; }
+.stagger > *:nth-child(8) { animation-delay: 390ms; }
+.stagger > *:nth-child(n + 9) { animation-delay: 440ms; }
+
+.value-changed { animation: count-flip var(--dur-slow) var(--ease-out); }
+.row-entering { animation: ticker-row-in var(--dur-slow) var(--ease-out) both; }
+.card-alerting { animation: alert-flash 1.6s var(--ease-out) 2; }
+
+/* Skeleton shimmer for loading states */
+.skeleton {
+  background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(148, 168, 214, 0.13) 45%,
+      transparent 70%
+    ),
+    var(--surface-raised);
+  background-size: 220% 100%;
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s linear infinite;
+  color: transparent !important;
+  min-height: 0.85em;
+}
+
+/* Live indicator dot */
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-line);
+  animation: pulse-ring 2.1s var(--ease-out) infinite;
+  flex: none;
+}
+
+.live-dot[data-tone="critical"] { background: var(--critical); color: rgba(255, 84, 112, 0.5); }
+.live-dot[data-tone="warning"] { background: var(--warning); color: rgba(255, 179, 64, 0.5); }
+.live-dot[data-tone="idle"] { background: var(--text-tertiary); color: transparent; animation: breathe 3s ease-in-out infinite; }
+
+/* Spinner */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--accent);
+  animation: spin 720ms linear infinite;
+  flex: none;
+}
+
+/* Sweep highlight used on panel load and on alert arrival */
+.sweep {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(95, 240, 221, 0.16) 50%,
+    transparent 70%
+  );
+  animation: sweep 1.5s var(--ease-out);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger > *,
+  .anim-rise,
+  .anim-fade,
+  .anim-scale,
+  .anim-left,
+  .anim-right,
+  .row-entering,
+  .value-changed,
+  .card-alerting {
+    animation: none !important;
+  }
+
+  .sweep::after,
+  .skeleton {
+    animation: none !important;
+  }
+
+  .live-dot { animation: none !important; }
+  .spinner { animation-duration: 2s; }
+}

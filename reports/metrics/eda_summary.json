@@ -1,0 +1,119 @@
+{
+  "label_scope": "train_and_validation_only",
+  "rows": {
+    "train": 18000,
+    "validation": 6000
+  },
+  "all_feature_rows": 30000,
+  "mean_transactions_per_hour_all_features": 13.89,
+  "fraud_rate": {
+    "train": 0.03,
+    "validation": 0.041
+  },
+  "spike_event_fraud_rate_range": [
+    0.1371571072319202,
+    0.22327044025157233
+  ],
+  "spike_event_volume_lift_range": [
+    2.279437037037037,
+    2.8867730092592594
+  ],
+  "benign_event_fraud_rate_range": [
+    0.011204481792717087,
+    0.0219435736677116
+  ],
+  "benign_event_volume_lift_range": [
+    2.296232888888889,
+    2.5700198611111116
+  ],
+  "promo_share": {
+    "scope": "train_reference",
+    "normal": 0.0,
+    "fraud_spike": 0.0,
+    "benign_surge": 0.631911532385466,
+    "development_benign_surge_combined": 0.6092436974789915
+  },
+  "holdout_note": "Held-out features contribute only to the label-free traffic-rate calculation. Held-out labels/events remain sealed until Phase 8.",
+  "event_profiles": [
+    {
+      "event_id": "TRN_S1",
+      "event_kind": "fraud_spike",
+      "rows": 401,
+      "duration_hours": 10.0,
+      "transactions_per_hour": 40.1,
+      "volume_lift": 2.8867730092592594,
+      "fraud_rate": 0.2194513715710723,
+      "promo_share": 0.0
+    },
+    {
+      "event_id": "TRN_S2",
+      "event_kind": "fraud_spike",
+      "rows": 465,
+      "duration_hours": 12.0,
+      "transactions_per_hour": 38.75,
+      "volume_lift": 2.7895873842592596,
+      "fraud_rate": 0.2064516129032258,
+      "promo_share": 0.0
+    },
+    {
+      "event_id": "TRN_S3",
+      "event_kind": "fraud_spike",
+      "rows": 401,
+      "duration_hours": 10.0,
+      "transactions_per_hour": 40.1,
+      "volume_lift": 2.8867730092592594,
+      "fraud_rate": 0.1371571072319202,
+      "promo_share": 0.0
+    },
+    {
+      "event_id": "TRN_B1",
+      "event_kind": "benign_surge",
+      "rows": 357,
+      "duration_hours": 10.0,
+      "transactions_per_hour": 35.7,
+      "volume_lift": 2.5700198611111116,
+      "fraud_rate": 0.011204481792717087,
+      "promo_share": 0.6162464985994398
+    },
+    {
+      "event_id": "TRN_B2",
+      "event_kind": "benign_surge",
+      "rows": 276,
+      "duration_hours": 8.0,
+      "transactions_per_hour": 34.5,
+      "volume_lift": 2.483632638888889,
+      "fraud_rate": 0.018115942028985508,
+      "promo_share": 0.6521739130434783
+    },
+    {
+      "event_id": "VAL_S1",
+      "event_kind": "fraud_spike",
+      "rows": 318,
+      "duration_hours": 10.0,
+      "transactions_per_hour": 31.8,
+      "volume_lift": 2.2890346666666668,
+      "fraud_rate": 0.22327044025157233,
+      "promo_share": 0.0
+    },
+    {
+      "event_id": "VAL_S2",
+      "event_kind": "fraud_spike",
+      "rows": 380,
+      "duration_hours": 12.0,
+      "transactions_per_hour": 31.666666666666668,
+      "volume_lift": 2.279437037037037,
+      "fraud_rate": 0.20526315789473684,
+      "promo_share": 0.0
+    },
+    {
+      "event_id": "VAL_B1",
+      "event_kind": "benign_surge",
+      "rows": 319,
+      "duration_hours": 10.0,
+      "transactions_per_hour": 31.9,
+      "volume_lift": 2.296232888888889,
+      "fraud_rate": 0.0219435736677116,
+      "promo_share": 0.5642633228840125
+    }
+  ]
+}

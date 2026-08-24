@@ -1,0 +1,25 @@
+{
+  "false_positive_cost_if_blocked_inr": {
+    "purpose": "Synthetic business cost for blocking a genuine transaction.",
+    "construction": "Uses transaction amount, category-specific synthetic margin proxy, and customer activity friction proxy.",
+    "warning": "Synthetic evaluation proxy; do not present as a Razorpay or industry-standard cost model."
+  },
+  "fraud_loss_if_missed_inr": {
+    "purpose": "Synthetic loss exposure when a fraudulent transaction is not stopped.",
+    "construction": "Uses transaction amount, payment-method-specific synthetic loss-given-fraud factor, and a fixed operational component.",
+    "warning": "Synthetic evaluation proxy; do not present as a real-world loss rate."
+  },
+  "recommended_reporting": [
+    "precision",
+    "recall",
+    "F1",
+    "PR-AUC",
+    "false-positive count",
+    "total false-positive cost",
+    "fraud loss captured",
+    "fraud loss missed",
+    "spike detection delay",
+    "event-level spike precision",
+    "event-level spike recall"
+  ]
+}

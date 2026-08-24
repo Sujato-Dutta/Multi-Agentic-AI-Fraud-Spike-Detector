@@ -1,0 +1,99 @@
+{
+  "uid": "fraud-infrastructure",
+  "title": "Infrastructure",
+  "tags": ["fraud", "infrastructure"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "refresh": "15s",
+  "time": { "from": "now-3h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Dependency health (1 healthy, 0.5 degraded, 0 down)",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "fieldConfig": { "defaults": { "min": 0, "max": 1 }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "fraud_dependency_status",
+          "legendFormat": "{{dependency}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Redpanda consumer lag",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "expr": "fraud_stream_consumer_lag",
+          "legendFormat": "{{topic}}/{{partition}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Stream publish and handler failures",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
+      "targets": [
+        {
+          "expr": "sum by (topic) (increase(fraud_stream_publish_failures_total[10m]))",
+          "legendFormat": "publish {{topic}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (topic) (increase(fraud_stream_handler_failures_total[10m]))",
+          "legendFormat": "handler {{topic}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Redis cache performance",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum(rate(fraud_cache_hits_total[5m])) / clamp_min(sum(rate(fraud_cache_hits_total[5m])) + sum(rate(fraud_cache_misses_total[5m])), 0.001)",
+          "legendFormat": "hit ratio",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(fraud_cache_fallbacks_total[5m]))",
+          "legendFormat": "local fallbacks/s",
+          "refId": "B"
+        },
+        {
+          "expr": "fraud_cache_redis_available",
+          "legendFormat": "redis available",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Visible degradation events by case",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum by (case) (increase(fraud_degradation_events_total[15m]))",
+          "legendFormat": "{{case}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP request rate by handler",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 27 },
+      "targets": [
+        {
+          "expr": "sum by (handler) (rate(http_requests_total[5m]))",
+          "legendFormat": "{{handler}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

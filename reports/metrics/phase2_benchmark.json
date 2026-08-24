@@ -1,0 +1,232 @@
+{
+  "report_type": "phase2_development_benchmark",
+  "heldout_test_accessed": false,
+  "model_artifact": {
+    "path": "models\\fraud\\fraud_model.joblib",
+    "sha256": "bdfa0755413b58ecf395194937e481a2d98fe21505e712325cddfef2de7d83f6",
+    "threshold_score_space": "raw_xgboost_probability",
+    "risk_density_score_space": "rank_preserving_isotonic_probability"
+  },
+  "detector_config": {
+    "window_minutes": 120,
+    "slide_minutes": 15,
+    "min_support": 20,
+    "min_high_risk_count": 4,
+    "density_lift": 2.5,
+    "extreme_lift": 5.0,
+    "alpha": 0.01,
+    "confirmation_windows": 2,
+    "promo_lift_margin": 0.5
+  },
+  "validation": {
+    "transaction": {
+      "precision_floor": {
+        "operating_point": "precision_floor",
+        "threshold": 0.37154513597488403,
+        "threshold_score_space": "raw_xgboost_probability",
+        "risk_density_score_space": "rank_preserving_isotonic_probability",
+        "metrics": {
+          "precision": 0.9026217228464419,
+          "recall": 0.9796747967479674,
+          "f1": 0.9395711500974658,
+          "pr_auc": 0.9852758203763825,
+          "roc_auc": 0.9993987922152422,
+          "false_positive_rate": 0.0045185957594716716,
+          "false_negative_rate": 0.02032520325203252,
+          "true_positives": 241,
+          "false_positives": 26,
+          "true_negatives": 5728,
+          "false_negatives": 5,
+          "raw_pr_auc": 0.9852758203763825,
+          "raw_roc_auc": 0.9993987922152422
+        },
+        "costs": {
+          "false_positive_cost_inr": 7980.69,
+          "fraud_loss_missed_inr": 5274.46,
+          "fraud_exposure_captured_inr": 607481.6599999999,
+          "legitimate_value_disrupted_inr": 96622.54
+        },
+        "calibrated_probability": {
+          "mean": 0.05074066004471079,
+          "p95": 0.9999990907951511,
+          "max": 0.9999999999974967
+        }
+      },
+      "cost_optimal": {
+        "operating_point": "cost_optimal",
+        "threshold": 0.22131933271884918,
+        "threshold_score_space": "raw_xgboost_probability",
+        "risk_density_score_space": "rank_preserving_isotonic_probability",
+        "metrics": {
+          "precision": 0.8776978417266187,
+          "recall": 0.991869918699187,
+          "f1": 0.9312977099236641,
+          "pr_auc": 0.9852758203763825,
+          "roc_auc": 0.9993987922152422,
+          "false_positive_rate": 0.005908932916232186,
+          "false_negative_rate": 0.008130081300813009,
+          "true_positives": 244,
+          "false_positives": 34,
+          "true_negatives": 5720,
+          "false_negatives": 2,
+          "raw_pr_auc": 0.9852758203763825,
+          "raw_roc_auc": 0.9993987922152422
+        },
+        "costs": {
+          "false_positive_cost_inr": 11423.660000000002,
+          "fraud_loss_missed_inr": 697.71,
+          "fraud_exposure_captured_inr": 612058.4099999999,
+          "legitimate_value_disrupted_inr": 150455.41999999998
+        },
+        "calibrated_probability": {
+          "mean": 0.05074066004471079,
+          "p95": 0.9999990907951511,
+          "max": 0.9999999999974967
+        }
+      }
+    },
+    "business": {
+      "false_positive_cost_inr": 7980.69,
+      "fraud_loss_missed_inr": 5274.46,
+      "fraud_exposure_captured_inr": 607481.6599999999,
+      "legitimate_value_disrupted_inr": 96622.54,
+      "analyst_review_cost_inr": 500.0,
+      "customer_friction_cost_inr": 0.0,
+      "net_risk_benefit_inr": 599000.97,
+      "assumption_scope": "synthetic_evaluation_proxy"
+    },
+    "spikes": {
+      "metrics": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "matched_events": 2,
+        "total_events": 2,
+        "false_alerts": 0,
+        "continuation_alerts": 0,
+        "benign_window_false_alerts": 0,
+        "mean_delay_minutes": 22.5,
+        "median_delay_minutes": 22.5,
+        "p90_delay_minutes": 28.5,
+        "false_alerts_per_day": 0.0,
+        "matches": [
+          {
+            "event_id": "VAL_S1",
+            "alert_id": "SPIKE-20260530-0001",
+            "fire_timestamp": "2026-05-30T18:30:00",
+            "delay_minutes": 30.0
+          },
+          {
+            "event_id": "VAL_S2",
+            "alert_id": "SPIKE-20260607-0002",
+            "fire_timestamp": "2026-06-07T12:15:00",
+            "delay_minutes": 15.0
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "alert_id": "SPIKE-20260530-0001",
+          "fire_timestamp": "2026-05-30T18:30:00",
+          "window_start": "2026-05-30T16:30:00",
+          "transaction_count": 32,
+          "risk_density": 0.15624995062453811,
+          "baseline_density": 0.009114116170674761,
+          "density_lift": 17.143730417578187,
+          "high_risk_count": 4,
+          "expected_high_risk_rate": 0.018196408536357282,
+          "p_value": 0.003020330529229845,
+          "volume_lift": 1.0241113221132971,
+          "promo_share": 0.0,
+          "required_lift": 2.5,
+          "reason": "extreme calibrated risk-density lift",
+          "drift_psi": 0.042270194756328455
+        },
+        {
+          "alert_id": "SPIKE-20260607-0002",
+          "fire_timestamp": "2026-06-07T12:15:00",
+          "window_start": "2026-06-07T10:15:00",
+          "transaction_count": 33,
+          "risk_density": 0.12121211834261099,
+          "baseline_density": 0.010906222604887795,
+          "density_lift": 11.114033037276158,
+          "high_risk_count": 4,
+          "expected_high_risk_rate": 0.019835071453620057,
+          "p_value": 0.004557622779761404,
+          "volume_lift": 0.9716757672481907,
+          "promo_share": 0.0,
+          "required_lift": 2.5,
+          "reason": "extreme calibrated risk-density lift",
+          "drift_psi": 0.0216162685068863
+        }
+      ],
+      "segments": {
+        "SPIKE-20260530-0001": [],
+        "SPIKE-20260607-0002": []
+      },
+      "reference_window_count": 5175,
+      "evaluation_window_count": 1719,
+      "scoring": {
+        "score_space": "rank_preserving_isotonic_probability",
+        "degraded": false,
+        "reason": null
+      }
+    }
+  },
+  "dev_test": {
+    "cutoff": "2026-05-11T00:00:00",
+    "fit_and_tune_rows": 13220,
+    "evaluation_rows": 4780,
+    "spikes": {
+      "metrics": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "matched_events": 1,
+        "total_events": 1,
+        "false_alerts": 0,
+        "continuation_alerts": 0,
+        "benign_window_false_alerts": 0,
+        "mean_delay_minutes": 15.0,
+        "median_delay_minutes": 15.0,
+        "p90_delay_minutes": 15.0,
+        "false_alerts_per_day": 0.0,
+        "matches": [
+          {
+            "event_id": "TRN_S3",
+            "alert_id": "SPIKE-20260512-0001",
+            "fire_timestamp": "2026-05-12T17:15:00",
+            "delay_minutes": 15.0
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "alert_id": "SPIKE-20260512-0001",
+          "fire_timestamp": "2026-05-12T17:15:00",
+          "window_start": "2026-05-12T15:15:00",
+          "transaction_count": 28,
+          "risk_density": 0.24091971046142674,
+          "baseline_density": 0.007225132544528349,
+          "density_lift": 33.34467692829762,
+          "high_risk_count": 7,
+          "expected_high_risk_rate": 0.014454194682256477,
+          "p_value": 2.479010604866279e-07,
+          "volume_lift": 0.9003859207756663,
+          "promo_share": 0.0,
+          "required_lift": 2.5,
+          "reason": "extreme calibrated risk-density lift",
+          "drift_psi": 0.15478202514747513
+        }
+      ],
+      "segments": {
+        "SPIKE-20260512-0001": []
+      },
+      "reference_window_count": 3831,
+      "evaluation_window_count": 1335,
+      "scoring": {
+        "score_space": "rank_preserving_isotonic_probability",
+        "degraded": false,
+        "reason": null
+      }
+    }
+  }
+}

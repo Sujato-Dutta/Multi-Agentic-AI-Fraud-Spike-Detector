@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" role="img" aria-label="Command center preview poster">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080b14" />
+      <stop offset="1" stop-color="#05070d" />
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.2" cy="0.15" r="0.5">
+      <stop offset="0" stop-color="#37d6c4" stop-opacity="0.22" />
+      <stop offset="1" stop-color="#37d6c4" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.85" cy="0.2" r="0.5">
+      <stop offset="0" stop-color="#8b7dfb" stop-opacity="0.22" />
+      <stop offset="1" stop-color="#8b7dfb" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#37d6c4" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#37d6c4" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="800" fill="url(#bg)" />
+  <rect width="1280" height="800" fill="url(#glowA)" />
+  <rect width="1280" height="800" fill="url(#glowB)" />
+
+  <g stroke="#94a8d6" stroke-opacity="0.06">
+    <path d="M0 200h1280M0 400h1280M0 600h1280M320 0v800M640 0v800M960 0v800" />
+  </g>
+
+  <g font-family="Inter, system-ui, sans-serif" fill="#eef2fb">
+    <text x="72" y="108" font-size="34" font-weight="600">Risk Operations</text>
+    <text x="72" y="146" font-size="20" fill="#6f7d9c">Calibrated risk density, not transaction volume</text>
+  </g>
+
+  <g transform="translate(72 200)">
+    <rect width="360" height="120" rx="14" fill="#111828" stroke="#94a8d6" stroke-opacity="0.12" />
+    <text x="24" y="42" font-family="Inter, sans-serif" font-size="14" fill="#6f7d9c">DENSITY LIFT</text>
+    <text x="24" y="90" font-family="monospace" font-size="42" fill="#5ff0dd">×8.63</text>
+
+    <rect x="392" width="360" height="120" rx="14" fill="#111828" stroke="#94a8d6" stroke-opacity="0.12" />
+    <text x="416" y="42" font-family="Inter, sans-serif" font-size="14" fill="#6f7d9c">VOLUME LIFT</text>
+    <text x="416" y="90" font-family="monospace" font-size="42" fill="#4aa8ff">×2.41</text>
+
+    <rect x="784" width="360" height="120" rx="14" fill="#111828" stroke="#94a8d6" stroke-opacity="0.12" />
+    <text x="808" y="42" font-family="Inter, sans-serif" font-size="14" fill="#6f7d9c">POLICY GATE</text>
+    <text x="808" y="90" font-family="monospace" font-size="30" fill="#ffb340">approval required</text>
+  </g>
+
+  <g transform="translate(72 372)">
+    <rect width="1136" height="330" rx="18" fill="#0d1220" stroke="#94a8d6" stroke-opacity="0.12" />
+    <rect x="742" y="18" width="230" height="294" rx="8" fill="#ff5470" fill-opacity="0.12" stroke="#ff5470" stroke-opacity="0.35" stroke-dasharray="6 6" />
+    <text x="754" y="46" font-family="monospace" font-size="15" fill="#ff7d92">fraud spike window</text>
+    <path
+      d="M40 268 L140 272 L240 258 L340 266 L440 250 L540 260 L640 246 L720 252 L760 214 L800 150 L840 96 L880 74 L920 104 L960 158 L1010 216 L1096 246 L1096 312 L40 312 Z"
+      fill="url(#area)"
+    />
+    <path
+      d="M40 268 L140 272 L240 258 L340 266 L440 250 L540 260 L640 246 L720 252 L760 214 L800 150 L840 96 L880 74 L920 104 L960 158 L1010 216 L1096 246"
+      fill="none" stroke="#37d6c4" stroke-width="3" stroke-linecap="round"
+    />
+    <circle cx="1096" cy="246" r="7" fill="#5ff0dd" />
+  </g>
+</svg>

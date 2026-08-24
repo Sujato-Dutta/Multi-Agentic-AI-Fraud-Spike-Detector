@@ -1,0 +1,90 @@
+groups:
+  - name: fraud-risk-operations
+    interval: 30s
+    rules:
+      - alert: FraudSpikeDetected
+        expr: increase(fraud_spike_alerts_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          alert_class: fraud_spike
+        annotations:
+          summary: Emerging fraud spike detected
+          description: >-
+            A risk-density spike alert was promoted to an incident. Estimated exposure is
+            {{ $value }} new alert(s); see fraud_estimated_exposure_inr and the incident view for
+            affected transactions and measured density lift.
+
+      - alert: RiskModelDistributionDrift
+        expr: max by (feature) (fraud_drift_psi) >= 0.2
+        for: 15m
+        labels:
+          severity: warning
+          alert_class: model_drift
+        annotations:
+          summary: Risk model distribution drift exceeds threshold
+          description: >-
+            PSI for {{ $labels.feature }} is {{ $value | printf "%.3f" }} against the training
+            reference. Drift is advisory only; no model or policy changes automatically.
+
+      - alert: InvestigationWorkflowFailures
+        expr: >-
+          increase(fraud_investigations_total{status="failed"}[15m]) > 0
+          or increase(fraud_llm_fallbacks_total{to_tier="deterministic"}[15m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+          alert_class: agent_failure
+        annotations:
+          summary: Investigation workflow failure rate increased
+          description: >-
+            Agent investigations are failing or repeatedly falling back to the deterministic
+            template. Incidents still reach analysts, with degraded confidence marked in the UI.
+
+      - alert: PolicySafetyRejection
+        expr: increase(fraud_policy_decisions_total{decision="deny"}[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          alert_class: policy_safety
+        annotations:
+          summary: AI-recommended action rejected by deterministic safety policy
+          description: >-
+            Rule {{ $labels.rule_id }} denied a recommended action. The deterministic policy engine
+            blocked it before execution; no action was taken.
+
+      - alert: StreamConsumerLagHigh
+        expr: max by (topic) (fraud_stream_consumer_lag) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          alert_class: infrastructure
+        annotations:
+          summary: Event consumer lag exceeds operational threshold
+          description: >-
+            Topic {{ $labels.topic }} lag is {{ $value }} messages. Check the consumer task and
+            Redpanda health.
+
+      - alert: DependencyDegraded
+        expr: min by (dependency) (fraud_dependency_status) < 1
+        for: 2m
+        labels:
+          severity: warning
+          alert_class: infrastructure
+        annotations:
+          summary: Dependency running degraded or down
+          description: >-
+            {{ $labels.dependency }} is not healthy (1 healthy, 0.5 degraded, 0 down). Degradation is
+            visible in the command center header and never silent.
+
+      - alert: StreamPublishFailures
+        expr: increase(fraud_stream_publish_failures_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          alert_class: infrastructure
+        annotations:
+          summary: Event publication failing
+          description: >-
+            Publishing to {{ $labels.topic }} failed. Outbox rows remain durable and are retried, so
+            no analyst decision, outcome, or reward event is lost.

@@ -1,0 +1,6 @@
+event_id,split,start_timestamp,end_timestamp,event_type
+TRN_B1,train,2026-04-19 18:00:00,2026-04-20 04:00:00,festival_sale
+TRN_B2,train,2026-05-18 10:00:00,2026-05-18 18:00:00,flash_sale
+VAL_B1,validation,2026-06-03 17:00:00,2026-06-04 03:00:00,festival_sale
+TST_B1,test,2026-06-18 18:00:00,2026-06-19 04:00:00,flash_sale
+TST_B2,test,2026-06-24 11:00:00,2026-06-24 19:00:00,salary_day_surge

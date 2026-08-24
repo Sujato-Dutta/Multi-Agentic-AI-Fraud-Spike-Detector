@@ -1,0 +1,91 @@
+{
+  "uid": "fraud-detector-perf",
+  "title": "Detector Performance",
+  "tags": ["fraud", "detector"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Detection delay quantiles (dataset minutes)",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "m" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(fraud_detection_delay_minutes_bucket[6h])))",
+          "legendFormat": "median delay",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum by (le) (rate(fraud_detection_delay_minutes_bucket[6h])))",
+          "legendFormat": "p90 delay",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Spike alerts by severity",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (severity) (increase(fraud_spike_alerts_total[1h]))",
+          "legendFormat": "{{severity}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Risk probability distribution (bucket rate)",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "expr": "sum by (le) (rate(fraud_transaction_risk_probability_bucket[10m]))",
+          "legendFormat": "<= {{le}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Model drift PSI (advisory only)",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
+      "targets": [
+        {
+          "expr": "fraud_drift_psi",
+          "legendFormat": "{{feature}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "High-risk transaction share",
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 18 },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "sum(increase(fraud_high_risk_transactions_total[1h])) / clamp_min(sum(increase(fraud_transactions_ingested_total{outcome=\"created\"}[1h])), 1)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Fraud model health (1 healthy)",
+      "gridPos": { "h": 5, "w": 8, "x": 8, "y": 18 },
+      "targets": [
+        { "expr": "fraud_dependency_status{dependency=\"fraud_model\"}", "refId": "A" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Drift alerts active",
+      "gridPos": { "h": 5, "w": 8, "x": 16, "y": 18 },
+      "targets": [{ "expr": "sum(fraud_drift_alert_active)", "refId": "A" }]
+    }
+  ]
+}

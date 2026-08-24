@@ -1,0 +1,3 @@
+event_id,split,start_timestamp,end_timestamp,scenario_family,affected_segment_ground_truth,difficulty
+VAL_S1,validation,2026-05-30 18:00:00,2026-05-31 04:00:00,new_device_velocity,new-device + elevated velocity + card/electronics concentration,medium
+VAL_S2,validation,2026-06-07 12:00:00,2026-06-08 00:00:00,proxy_geo_burst,proxy/IP-risk + long-distance activity,medium

@@ -1,0 +1,4 @@
+event_id,split,start_timestamp,end_timestamp,scenario_family,affected_segment_ground_truth,difficulty
+TRN_S1,train,2026-04-11 19:00:00,2026-04-12 05:00:00,new_device_velocity,new-device + elevated velocity + card/electronics concentration,medium
+TRN_S2,train,2026-04-26 11:00:00,2026-04-26 23:00:00,proxy_geo_burst,proxy/IP-risk + long-distance activity,medium
+TRN_S3,train,2026-05-12 17:00:00,2026-05-13 03:00:00,account_change_burst,recent account changes + abnormal amount/velocity,medium

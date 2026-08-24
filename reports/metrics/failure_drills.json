@@ -1,0 +1,119 @@
+[
+  {
+    "name": "fraud_model_missing",
+    "scenario": "Primary fraud model artifact and anomaly fallback both unavailable",
+    "expected": "Conservative deterministic rule scoring continues; degraded flag and reason set",
+    "observed": "degraded=True, score_space=deterministic_conservative_rule_score, risk=0.75",
+    "passed": true,
+    "evidence": {
+      "reason": "primary_fraud_model_unavailable:FileNotFoundError:anomaly_fallback_unavailable:FileNotFoundError:conservative_rules_active",
+      "score_space": "deterministic_conservative_rule_score"
+    }
+  },
+  {
+    "name": "llm_unavailable",
+    "scenario": "Every model tier times out (equivalent to a revoked API key)",
+    "expected": "Deterministic template returns usable output; llm marked degraded",
+    "observed": "degraded=True, llm=degraded, title='Deterministic incident summary'",
+    "passed": true,
+    "evidence": {
+      "failure_reasons": [
+        "primary:TimeoutError",
+        "secondary:TimeoutError",
+        "economy:TimeoutError"
+      ],
+      "model": "deterministic-template"
+    }
+  },
+  {
+    "name": "policy_artifact_corrupt",
+    "scenario": "Production response-policy artifact fails to score",
+    "expected": "Conservative ranking headed by human_escalation; degradation visible",
+    "observed": "operative=human_escalation, degraded=True",
+    "passed": true,
+    "evidence": {
+      "production_error": "ValueError: corrupt production artifact"
+    }
+  },
+  {
+    "name": "policy_violation",
+    "scenario": "AI-recommended broad defensive rule exceeds the legitimate-value ceiling",
+    "expected": "Deterministic policy denies the action before execution",
+    "observed": "decision=deny, rule=legitimate_value_ceiling",
+    "passed": true,
+    "evidence": {
+      "reason": "Affected legitimate value exceeds the action ceiling.",
+      "policy_version": "safety-v2"
+    }
+  },
+  {
+    "name": "postgres_down",
+    "scenario": "Postgres refuses the transaction write during ingestion",
+    "expected": "Explicit 503 database_unavailable, postgres marked down, transaction buffered to the stream",
+    "observed": "error=database_unavailable/503, postgres=down, buffered=['transaction.buffered']",
+    "passed": true,
+    "evidence": {
+      "reason": "OperationalError: (builtins.Exception) postgres unavailable\n[SQL: SELECT 1]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)",
+      "buffered_events": [
+        "transaction.buffered"
+      ]
+    }
+  },
+  {
+    "name": "redis_down",
+    "scenario": "Redis refuses every operation mid-run",
+    "expected": "Requests still succeed from the process-local fallback; redis marked degraded",
+    "observed": "redis=degraded, cached_read=hit",
+    "passed": true,
+    "evidence": {
+      "reason": "OSError: redis unreachable",
+      "stats": {
+        "hits": 1,
+        "misses": 0,
+        "failures": 3,
+        "fallbacks": 2
+      }
+    }
+  },
+  {
+    "name": "stream_down",
+    "scenario": "Redpanda refuses connections when the producer starts",
+    "expected": "Explicit stream_unavailable error and stream marked down; API keeps serving",
+    "observed": "error=stream_unavailable, stream=down",
+    "passed": true,
+    "evidence": {
+      "reason": "OSError: connection refused"
+    }
+  },
+  {
+    "name": "underperforming_candidate_policy",
+    "scenario": "Candidate policy has higher reward but safety violations and worse recall",
+    "expected": "Promotion gate blocks it; promotion stays an explicit admin action",
+    "observed": "passed=False, reasons=['recall_tolerance', 'fp_cost_tolerance', 'zero_safety_violations']",
+    "passed": true,
+    "evidence": {
+      "checks": {
+        "reward_margin": true,
+        "recall_tolerance": false,
+        "fp_cost_tolerance": false,
+        "zero_safety_violations": false,
+        "measured_holdback": true
+      }
+    }
+  },
+  {
+    "name": "verification_rejection",
+    "scenario": "Model cites an evidence ID that does not exist in the evidence store",
+    "expected": "Claim stripped, counted, and grounding score reduced",
+    "observed": "supported=1, rejected=1, grounding=0.50",
+    "passed": true,
+    "evidence": {
+      "rejected_claims": [
+        {
+          "claim_id": "C2",
+          "reason": "supported"
+        }
+      ]
+    }
+  }
+]

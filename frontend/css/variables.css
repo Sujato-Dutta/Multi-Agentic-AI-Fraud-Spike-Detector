@@ -1,0 +1,122 @@
+/* Design tokens for the fraud-risk command center. Dark, dense, enterprise. */
+
+:root {
+  color-scheme: dark;
+
+  /* Base surfaces: layered obsidian with a cool cast */
+  --surface-void: #05070d;
+  --surface-base: #080b14;
+  --surface-raised: #0d1220;
+  --surface-panel: #111828;
+  --surface-elevated: #161f33;
+  --surface-hover: #1b2540;
+  --surface-glass: rgba(17, 24, 40, 0.72);
+  --surface-scrim: rgba(5, 7, 13, 0.86);
+
+  /* Hairlines */
+  --line-subtle: rgba(148, 168, 214, 0.1);
+  --line-soft: rgba(148, 168, 214, 0.18);
+  --line-strong: rgba(148, 168, 214, 0.3);
+
+  /* Text */
+  --text-primary: #eef2fb;
+  --text-secondary: #a7b3cf;
+  --text-tertiary: #6f7d9c;
+  --text-inverse: #05070d;
+
+  /* Signal palette */
+  --accent: #37d6c4;
+  --accent-bright: #5ff0dd;
+  --accent-dim: rgba(55, 214, 196, 0.14);
+  --accent-line: rgba(55, 214, 196, 0.42);
+
+  --ai: #8b7dfb;
+  --ai-bright: #a99bff;
+  --ai-dim: rgba(139, 125, 251, 0.14);
+
+  --critical: #ff5470;
+  --critical-bright: #ff7d92;
+  --critical-dim: rgba(255, 84, 112, 0.14);
+
+  --warning: #ffb340;
+  --warning-bright: #ffc76b;
+  --warning-dim: rgba(255, 179, 64, 0.14);
+
+  --positive: #45d97f;
+  --positive-dim: rgba(69, 217, 127, 0.14);
+
+  --info: #4aa8ff;
+  --info-dim: rgba(74, 168, 255, 0.14);
+
+  /* Typography */
+  --font-sans: "Inter", "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.5rem;
+  --text-display: clamp(2.5rem, 5.2vw, 4.25rem);
+
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.08em;
+  --tracking-caps: 0.14em;
+
+  /* Space + radius */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Depth */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 28px -12px rgba(0, 0, 0, 0.75);
+  --shadow-lg: 0 32px 64px -24px rgba(0, 0, 0, 0.85);
+  --shadow-glow-accent: 0 0 0 1px var(--accent-line), 0 12px 40px -16px rgba(55, 214, 196, 0.5);
+  --shadow-glow-critical: 0 0 0 1px rgba(255, 84, 112, 0.45), 0 12px 40px -14px rgba(255, 84, 112, 0.5);
+
+  /* Motion: one easing vocabulary used everywhere */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-instant: 90ms;
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 420ms;
+  --dur-slower: 720ms;
+  --dur-ambient: 18s;
+
+  /* Layout */
+  --shell-rail: 248px;
+  --shell-header: 64px;
+  --shell-strip: 40px;
+  --content-max: 1680px;
+}
+
+/* Honour the OS reduced-motion setting: keep state changes, drop the theatre. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 1ms;
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+    --dur-slower: 1ms;
+    --dur-ambient: 1ms;
+  }
+}

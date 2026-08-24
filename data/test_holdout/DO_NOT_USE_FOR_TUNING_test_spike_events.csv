@@ -1,0 +1,4 @@
+event_id,split,start_timestamp,end_timestamp,scenario_family,affected_segment_ground_truth,difficulty
+TST_S1,test,2026-06-15 20:00:00,2026-06-16 05:00:00,low_amount_microburst,low-value high-velocity activity with elevated network risk,hard
+TST_S2,test,2026-06-21 10:00:00,2026-06-21 22:00:00,trusted_device_takeover_like,trusted-device appearance + account change + geographic/amount anomaly,hard
+TST_S3,test,2026-06-27 18:00:00,2026-06-28 04:00:00,cross_channel_burst,cross-channel behavior + mismatch/network/velocity signals,hard

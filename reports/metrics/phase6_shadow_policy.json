@@ -1,0 +1,130 @@
+{
+  "report_type": "phase6_shadow_policy_validation",
+  "heldout_test_accessed": false,
+  "assumptions_version": "action-effects-v1",
+  "assumptions_path": "infrastructure\\action_effects.yaml",
+  "holdback": {
+    "incidents": [
+      "VAL_S2"
+    ],
+    "start_timestamp": "2026-06-07T12:00:00",
+    "selection": "chronological_validation_tail_frozen_before_scoring"
+  },
+  "production_identity": "builtin:conservative-human-escalation-v1",
+  "candidate_artifact_checksum": "666f78b47dba3c50b7b185024b32a2fc48924f2e1e0a5799e999896c060fb185",
+  "production": {
+    "metrics": {
+      "expected_reward_inr": 94622.18,
+      "precision": 1.0,
+      "recall": 0.4499999885397249,
+      "false_positive_cost_inr": 0.0,
+      "fraud_value_captured_inr": 98165.18,
+      "escalation_rate": 1.0,
+      "safety_violations": 0,
+      "evaluated_incidents": 1
+    },
+    "actions": [
+      "human_escalation"
+    ]
+  },
+  "candidate": {
+    "metrics": {
+      "expected_reward_inr": 170890.34,
+      "precision": 0.917491896130395,
+      "recall": 0.9199999908317801,
+      "false_positive_cost_inr": 18047.92,
+      "fraud_value_captured_inr": 200693.26,
+      "escalation_rate": 0.0,
+      "safety_violations": 1,
+      "evaluated_incidents": 1
+    },
+    "actions": [
+      "temporary_defensive_rule"
+    ]
+  },
+  "always_escalate": {
+    "metrics": {
+      "expected_reward_inr": 94622.18,
+      "precision": 1.0,
+      "recall": 0.4499999885397249,
+      "false_positive_cost_inr": 0.0,
+      "fraud_value_captured_inr": 98165.18,
+      "escalation_rate": 1.0,
+      "safety_violations": 0,
+      "evaluated_incidents": 1
+    },
+    "actions": [
+      "human_escalation"
+    ]
+  },
+  "always_step_up": {
+    "metrics": {
+      "expected_reward_inr": 138176.71,
+      "precision": 0.9825801767186857,
+      "recall": 0.6999999770794498,
+      "false_positive_cost_inr": 2707.19,
+      "fraud_value_captured_inr": 152701.39,
+      "escalation_rate": 0.0,
+      "safety_violations": 1,
+      "evaluated_incidents": 1
+    },
+    "actions": [
+      "step_up_verification"
+    ]
+  },
+  "candidate_beats_always_escalate": true,
+  "candidate_beats_always_step_up": true,
+  "promotion_gate": {
+    "passed": false,
+    "checks": {
+      "reward_margin": true,
+      "recall_tolerance": true,
+      "fp_cost_tolerance": false,
+      "zero_safety_violations": false,
+      "measured_holdback": true
+    },
+    "reasons": [
+      "fp_cost_tolerance",
+      "zero_safety_violations"
+    ]
+  },
+  "promotion_evidence": {
+    "schema_version": "policy-evaluation-v1",
+    "evaluator_version": "phase6-shadow-evaluator-v1",
+    "assumptions_version": "action-effects-v1",
+    "holdback": {
+      "incidents": [
+        "VAL_S2"
+      ],
+      "start_timestamp": "2026-06-07T12:00:00",
+      "selection": "chronological_validation_tail_frozen_before_scoring"
+    },
+    "holdback_digest": "dd34d363d907907d4ec4b4c9c75a0a129624f766ec7f4ab64a581b928f370984",
+    "candidate_artifact_checksum": "666f78b47dba3c50b7b185024b32a2fc48924f2e1e0a5799e999896c060fb185",
+    "production_identity": "builtin:conservative-human-escalation-v1",
+    "candidate_version": null,
+    "production_version": null,
+    "candidate_metrics": {
+      "expected_reward_inr": 170890.34,
+      "precision": 0.917491896130395,
+      "recall": 0.9199999908317801,
+      "false_positive_cost_inr": 18047.92,
+      "fraud_value_captured_inr": 200693.26,
+      "escalation_rate": 0.0,
+      "safety_violations": 1,
+      "evaluated_incidents": 1
+    },
+    "production_metrics": {
+      "expected_reward_inr": 94622.18,
+      "precision": 1.0,
+      "recall": 0.4499999885397249,
+      "false_positive_cost_inr": 0.0,
+      "fraud_value_captured_inr": 98165.18,
+      "escalation_rate": 1.0,
+      "safety_violations": 0,
+      "evaluated_incidents": 1
+    },
+    "evidence_digest": "7c4a52fa3f348afaee7f80dd7765e22db3078d58a7ed49569232c19c0e969906"
+  },
+  "automatic_promotion": false
+}

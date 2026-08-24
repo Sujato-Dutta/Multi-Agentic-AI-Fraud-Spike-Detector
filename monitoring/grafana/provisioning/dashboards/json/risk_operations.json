@@ -1,0 +1,115 @@
+{
+  "uid": "fraud-risk-ops",
+  "title": "Risk Operations",
+  "tags": ["fraud", "risk"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Live transaction volume (per minute)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(fraud_transactions_ingested_total{outcome=\"created\"}[1m])) * 60",
+          "legendFormat": "transactions/min",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Live fraud-risk trend (mean calibrated probability)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(fraud_transaction_risk_probability_sum[5m])) / clamp_min(sum(rate(fraud_transaction_risk_probability_count[5m])), 0.001)",
+          "legendFormat": "mean risk probability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(fraud_high_risk_transactions_total[5m])) / clamp_min(sum(rate(fraud_transactions_ingested_total{outcome=\"created\"}[5m])), 0.001)",
+          "legendFormat": "high-risk share",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Current spike intensity (alerts, 1h)",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "sum(increase(fraud_spike_alerts_total[1h]))", "refId": "A" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Active incidents",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 8 },
+      "targets": [{ "expr": "fraud_active_incidents", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Estimated fraud exposure (INR, latest incident)",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "currencyINR" }, "overrides": [] },
+      "targets": [{ "expr": "fraud_estimated_exposure_inr", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Human escalation rate",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "sum(increase(fraud_review_decisions_total{decision=\"escalate\"}[6h])) / clamp_min(sum(increase(fraud_review_decisions_total[6h])), 1)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Analyst decisions by choice",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "targets": [
+        {
+          "expr": "sum by (decision) (increase(fraud_review_decisions_total[15m]))",
+          "legendFormat": "{{decision}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Decision latency P50 / P95",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(fraud_decision_latency_seconds_bucket[10m])))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(fraud_decision_latency_seconds_bucket[10m])))",
+          "legendFormat": "p95",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Safety policy decisions (deny is a blocked action)",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
+      "targets": [
+        {
+          "expr": "sum by (decision) (increase(fraud_policy_decisions_total[15m]))",
+          "legendFormat": "{{decision}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

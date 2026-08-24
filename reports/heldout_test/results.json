@@ -1,0 +1,624 @@
+{
+  "report_type": "phase8_heldout_evaluation",
+  "generated_at": "2026-08-23T14:19:48.496282+00:00",
+  "commit": "unavailable",
+  "working_tree": "unavailable",
+  "acknowledgement": "I_ACKNOWLEDGE_THIS_IS_THE_SINGLE_PHASE_8_HOLDOUT_EVALUATION",
+  "read_reason": "integrity wording correction in the generator: replaced an inaccurate single-read note with an explicit per-read disclosure. No model, threshold, detector parameter, or policy changed.",
+  "artifacts": {
+    "fraud_model": {
+      "path": "models\\fraud\\fraud_model.joblib",
+      "sha256": "bdfa0755413b58ecf395194937e481a2d98fe21505e712325cddfef2de7d83f6"
+    },
+    "action_effects_version": "action-effects-v1",
+    "candidate_policy_present": true,
+    "production_policy_present": false
+  },
+  "dataset": {
+    "rows": 6000,
+    "spike_events": 3,
+    "benign_events": 2,
+    "start": "2026-06-12T00:01:46",
+    "end": "2026-06-29T23:54:12"
+  },
+  "detector_config": {
+    "window_minutes": 120,
+    "slide_minutes": 15,
+    "min_support": 20,
+    "density_lift": 2.5,
+    "extreme_lift": 5.0,
+    "alpha": 0.01,
+    "confirmation_windows": 2,
+    "promo_lift_margin": 0.5
+  },
+  "transaction": {
+    "precision_floor": {
+      "operating_point": "precision_floor",
+      "threshold": 0.37154513597488403,
+      "threshold_score_space": "raw_xgboost_probability",
+      "risk_density_score_space": "rank_preserving_isotonic_probability",
+      "metrics": {
+        "precision": 0.6209302325581395,
+        "recall": 0.978021978021978,
+        "f1": 0.7596017069701281,
+        "pr_auc": 0.9484854662551704,
+        "roc_auc": 0.9969375831083531,
+        "false_positive_rate": 0.028461672778068797,
+        "false_negative_rate": 0.02197802197802198,
+        "true_positives": 267,
+        "false_positives": 163,
+        "true_negatives": 5564,
+        "false_negatives": 6,
+        "raw_pr_auc": 0.9484854662551704,
+        "raw_roc_auc": 0.9969375831083531
+      },
+      "costs": {
+        "false_positive_cost_inr": 50224.68000000001,
+        "fraud_loss_missed_inr": 18171.85,
+        "fraud_exposure_captured_inr": 1153387.28,
+        "legitimate_value_disrupted_inr": 545282.6
+      },
+      "calibrated_probability": {
+        "mean": 0.08700615568207111,
+        "p95": 0.9999999622665694,
+        "max": 0.999999999996543
+      }
+    },
+    "cost_optimal": {
+      "operating_point": "cost_optimal",
+      "threshold": 0.22131933271884918,
+      "threshold_score_space": "raw_xgboost_probability",
+      "risk_density_score_space": "rank_preserving_isotonic_probability",
+      "metrics": {
+        "precision": 0.5726495726495726,
+        "recall": 0.9816849816849816,
+        "f1": 0.7233468286099866,
+        "pr_auc": 0.9484854662551704,
+        "roc_auc": 0.9969375831083531,
+        "false_positive_rate": 0.03492229788720098,
+        "false_negative_rate": 0.018315018315018316,
+        "true_positives": 268,
+        "false_positives": 200,
+        "true_negatives": 5527,
+        "false_negatives": 5,
+        "raw_pr_auc": 0.9484854662551704,
+        "raw_roc_auc": 0.9969375831083531
+      },
+      "costs": {
+        "false_positive_cost_inr": 62376.95000000001,
+        "fraud_loss_missed_inr": 17835.66,
+        "fraud_exposure_captured_inr": 1153723.4700000002,
+        "legitimate_value_disrupted_inr": 683050.06
+      },
+      "calibrated_probability": {
+        "mean": 0.08700615568207111,
+        "p95": 0.9999999622665694,
+        "max": 0.999999999996543
+      }
+    },
+    "selected_operating_point": "precision_floor"
+  },
+  "events": {
+    "metrics": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "matched_events": 3,
+      "total_events": 3,
+      "false_alerts": 0,
+      "continuation_alerts": 0,
+      "benign_window_false_alerts": 0,
+      "mean_delay_minutes": 25.0,
+      "median_delay_minutes": 30.0,
+      "p90_delay_minutes": 30.0,
+      "false_alerts_per_day": 0.0,
+      "matches": [
+        {
+          "event_id": "TST_S1",
+          "alert_id": "SPIKE-20260615-0001",
+          "fire_timestamp": "2026-06-15T20:30:00",
+          "delay_minutes": 30.0
+        },
+        {
+          "event_id": "TST_S2",
+          "alert_id": "SPIKE-20260621-0002",
+          "fire_timestamp": "2026-06-21T10:15:00",
+          "delay_minutes": 15.0
+        },
+        {
+          "event_id": "TST_S3",
+          "alert_id": "SPIKE-20260627-0003",
+          "fire_timestamp": "2026-06-27T18:30:00",
+          "delay_minutes": 30.0
+        }
+      ]
+    },
+    "alerts": [
+      {
+        "alert_id": "SPIKE-20260615-0001",
+        "fire_timestamp": "2026-06-15T20:30:00",
+        "window_start": "2026-06-15T18:30:00",
+        "transaction_count": 49,
+        "risk_density": 0.3061223658490894,
+        "baseline_density": 0.049664139029153564,
+        "density_lift": 6.163851258337353,
+        "high_risk_count": 10,
+        "expected_high_risk_rate": 0.024086287637189615,
+        "p_value": 4.967272065341864e-07,
+        "volume_lift": 1.7372193933750193,
+        "promo_share": 0.0,
+        "required_lift": 2.5,
+        "reason": "extreme calibrated risk-density lift",
+        "drift_psi": 0.042701161525334375
+      },
+      {
+        "alert_id": "SPIKE-20260621-0002",
+        "fire_timestamp": "2026-06-21T10:15:00",
+        "window_start": "2026-06-21T08:15:00",
+        "transaction_count": 30,
+        "risk_density": 0.1333332929253244,
+        "baseline_density": 0.006376168080408902,
+        "density_lift": 20.911194818561583,
+        "high_risk_count": 4,
+        "expected_high_risk_rate": 0.009880376507287776,
+        "p_value": 0.00025403956888415827,
+        "volume_lift": 0.92693856603885,
+        "promo_share": 0.0,
+        "required_lift": 2.5,
+        "reason": "extreme calibrated risk-density lift",
+        "drift_psi": 0.0204158467873506
+      },
+      {
+        "alert_id": "SPIKE-20260627-0003",
+        "fire_timestamp": "2026-06-27T18:30:00",
+        "window_start": "2026-06-27T16:30:00",
+        "transaction_count": 34,
+        "risk_density": 0.23529408654653894,
+        "baseline_density": 0.013301376165816663,
+        "density_lift": 17.68945435519849,
+        "high_risk_count": 7,
+        "expected_high_risk_rate": 0.025431645367300953,
+        "p_value": 3.380811471769578e-05,
+        "volume_lift": 1.1021709591062012,
+        "promo_share": 0.0,
+        "required_lift": 2.5,
+        "reason": "extreme calibrated risk-density lift",
+        "drift_psi": 0.04388778393235235
+      }
+    ],
+    "segments": {
+      "SPIKE-20260615-0001": [
+        {
+          "conditions": [
+            "amount_inr_band=(-0.001, 500.0]"
+          ],
+          "support": 19,
+          "baseline_support": 4119,
+          "risk_density": 0.5263156313732363,
+          "baseline_risk_density": 0.03118329490640229,
+          "density_lift": 16.87812763061089,
+          "prevalence_lift": 2.2593159623645525,
+          "excess_risk_contribution": 0.70669407245434,
+          "p_value": 0.00041060958830572655,
+          "score": 194.96646419881776,
+          "condition_contributions": [
+            {
+              "condition": "amount_inr_band=(-0.001, 500.0]",
+              "parent_support": 49,
+              "support": 19,
+              "support_retention": 0.3877551020408163,
+              "parent_density_lift": 7.968011190975083,
+              "density_lift": 16.87812763061089,
+              "marginal_density_lift": 8.910116439635807
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "amount_inr_band=(-0.001, 500.0]",
+            "payment_method=upi"
+          ],
+          "support": 12,
+          "baseline_support": 1913,
+          "risk_density": 0.7499997496505117,
+          "baseline_risk_density": 0.025614216702252578,
+          "density_lift": 29.28060453180108,
+          "prevalence_lift": 3.0724260430779733,
+          "excess_risk_contribution": 0.6509617067952342,
+          "p_value": 0.0026757538766470352,
+          "score": 190.47907612808658,
+          "condition_contributions": [
+            {
+              "condition": "amount_inr_band=(-0.001, 500.0]",
+              "parent_support": 49,
+              "support": 19,
+              "support_retention": 0.3877551020408163,
+              "parent_density_lift": 7.968011190975083,
+              "density_lift": 16.87812763061089,
+              "marginal_density_lift": 8.910116439635807
+            },
+            {
+              "condition": "payment_method=upi",
+              "parent_support": 19,
+              "support": 12,
+              "support_retention": 0.631578947368421,
+              "parent_density_lift": 16.87812763061089,
+              "density_lift": 29.28060453180108,
+              "marginal_density_lift": 12.402476901190191
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "amount_inr_band=(-0.001, 500.0]",
+            "is_new_device=0"
+          ],
+          "support": 16,
+          "baseline_support": 3855,
+          "risk_density": 0.43749981229406254,
+          "baseline_risk_density": 0.012710763067635272,
+          "density_lift": 34.4196339720976,
+          "prevalence_lift": 2.0328754069721273,
+          "excess_risk_contribution": 0.4867779243838408,
+          "p_value": 0.024560641749534196,
+          "score": 147.37112423227506,
+          "condition_contributions": [
+            {
+              "condition": "amount_inr_band=(-0.001, 500.0]",
+              "parent_support": 49,
+              "support": 19,
+              "support_retention": 0.3877551020408163,
+              "parent_density_lift": 7.968011190975083,
+              "density_lift": 16.87812763061089,
+              "marginal_density_lift": 8.910116439635807
+            },
+            {
+              "condition": "is_new_device=0",
+              "parent_support": 19,
+              "support": 16,
+              "support_retention": 0.8421052631578947,
+              "parent_density_lift": 16.87812763061089,
+              "density_lift": 34.4196339720976,
+              "marginal_density_lift": 17.54150634148671
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "amount_inr_band=(-0.001, 500.0]",
+            "channel=android"
+          ],
+          "support": 11,
+          "baseline_support": 1822,
+          "risk_density": 0.636363492166521,
+          "baseline_risk_density": 0.03317453080726079,
+          "density_lift": 19.18229065133432,
+          "prevalence_lift": 2.957055489594301,
+          "excess_risk_contribution": 0.5014222133077271,
+          "p_value": 0.002464446728124315,
+          "score": 105.81393394970594,
+          "condition_contributions": [
+            {
+              "condition": "amount_inr_band=(-0.001, 500.0]",
+              "parent_support": 49,
+              "support": 19,
+              "support_retention": 0.3877551020408163,
+              "parent_density_lift": 7.968011190975083,
+              "density_lift": 16.87812763061089,
+              "marginal_density_lift": 8.910116439635807
+            },
+            {
+              "condition": "channel=android",
+              "parent_support": 19,
+              "support": 11,
+              "support_retention": 0.5789473684210527,
+              "parent_density_lift": 16.87812763061089,
+              "density_lift": 19.18229065133432,
+              "marginal_density_lift": 2.304163020723429
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "payment_method=upi"
+          ],
+          "support": 25,
+          "baseline_support": 11114,
+          "risk_density": 0.5599998369528,
+          "baseline_risk_density": 0.03833380054265894,
+          "density_lift": 14.608513349194695,
+          "prevalence_lift": 1.1017543601928805,
+          "excess_risk_contribution": 0.9940578491774515,
+          "p_value": 0.027156177292256688,
+          "score": 104.5664830639007,
+          "condition_contributions": [
+            {
+              "condition": "payment_method=upi",
+              "parent_support": 49,
+              "support": 25,
+              "support_retention": 0.5102040816326531,
+              "parent_density_lift": 7.968011190975083,
+              "density_lift": 14.608513349194695,
+              "marginal_density_lift": 6.640502158219612
+            }
+          ]
+        }
+      ],
+      "SPIKE-20260621-0002": [],
+      "SPIKE-20260627-0003": [
+        {
+          "conditions": [
+            "customer_age_days_band=(730.0, inf]"
+          ],
+          "support": 11,
+          "baseline_support": 6441,
+          "risk_density": 0.3636362906673858,
+          "baseline_risk_density": 0.03742726826193467,
+          "density_lift": 9.715811694363529,
+          "prevalence_lift": 1.2055124797939671,
+          "excess_risk_contribution": 0.5344370546043349,
+          "p_value": 0.0038704975556248648,
+          "score": 44.65909885914382,
+          "condition_contributions": [
+            {
+              "condition": "customer_age_days_band=(730.0, inf]",
+              "parent_support": 34,
+              "support": 11,
+              "support_retention": 0.3235294117647059,
+              "parent_density_lift": 6.124432984740892,
+              "density_lift": 9.715811694363529,
+              "marginal_density_lift": 3.591378709622637
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "customer_age_days_band=(730.0, inf]",
+            "payment_method=upi"
+          ],
+          "support": 8,
+          "baseline_support": 2944,
+          "risk_density": 0.4999998996601167,
+          "baseline_risk_density": 0.03838314861325134,
+          "density_lift": 13.026547266825775,
+          "prevalence_lift": 1.9181585677749362,
+          "excess_risk_contribution": 0.5516556023605873,
+          "p_value": 0.0030611496393178543,
+          "score": 42.59450857455144,
+          "condition_contributions": [
+            {
+              "condition": "customer_age_days_band=(730.0, inf]",
+              "parent_support": 34,
+              "support": 11,
+              "support_retention": 0.3235294117647059,
+              "parent_density_lift": 6.124432984740892,
+              "density_lift": 9.715811694363529,
+              "marginal_density_lift": 3.591378709622637
+            },
+            {
+              "condition": "payment_method=upi",
+              "parent_support": 11,
+              "support": 8,
+              "support_retention": 0.7272727272727273,
+              "parent_density_lift": 9.715811694363529,
+              "density_lift": 13.026547266825775,
+              "marginal_density_lift": 3.310735572462246
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "amount_inr_band=(500.0, 2000.0]"
+          ],
+          "support": 19,
+          "baseline_support": 10742,
+          "risk_density": 0.21052627970203538,
+          "baseline_risk_density": 0.03317050989415967,
+          "density_lift": 6.346790579155455,
+          "prevalence_lift": 1.248535161597687,
+          "excess_risk_contribution": 0.48852094470889434,
+          "p_value": 0.015268077171816762,
+          "score": 35.33563450074288,
+          "condition_contributions": [
+            {
+              "condition": "amount_inr_band=(500.0, 2000.0]",
+              "parent_support": 34,
+              "support": 19,
+              "support_retention": 0.5588235294117647,
+              "parent_density_lift": 6.124432984740892,
+              "density_lift": 6.346790579155455,
+              "marginal_density_lift": 0.2223575944145626
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "customer_age_days_band=(730.0, inf]",
+            "billing_shipping_mismatch=0"
+          ],
+          "support": 10,
+          "baseline_support": 6130,
+          "risk_density": 0.2999999197356741,
+          "baseline_risk_density": 0.01632447696916883,
+          "density_lift": 18.377306685063658,
+          "prevalence_lift": 1.1515209672776126,
+          "excess_risk_contribution": 0.39078360811460416,
+          "p_value": 0.011350618937388255,
+          "score": 35.286898840394144,
+          "condition_contributions": [
+            {
+              "condition": "customer_age_days_band=(730.0, inf]",
+              "parent_support": 34,
+              "support": 11,
+              "support_retention": 0.3235294117647059,
+              "parent_density_lift": 6.124432984740892,
+              "density_lift": 9.715811694363529,
+              "marginal_density_lift": 3.591378709622637
+            },
+            {
+              "condition": "billing_shipping_mismatch=0",
+              "parent_support": 11,
+              "support": 10,
+              "support_retention": 0.9090909090909091,
+              "parent_density_lift": 9.715811694363529,
+              "density_lift": 18.377306685063658,
+              "marginal_density_lift": 8.66149499070013
+            }
+          ]
+        },
+        {
+          "conditions": [
+            "amount_inr_band=(500.0, 2000.0]",
+            "payment_method=upi"
+          ],
+          "support": 11,
+          "baseline_support": 5052,
+          "risk_density": 0.3636363008267047,
+          "baseline_risk_density": 0.03271235914573853,
+          "density_lift": 11.116174752381806,
+          "prevalence_lift": 1.5369568254855388,
+          "excess_risk_contribution": 0.5344370712993731,
+          "p_value": 0.005163333212086213,
+          "score": 32.57213291939889,
+          "condition_contributions": [
+            {
+              "condition": "amount_inr_band=(500.0, 2000.0]",
+              "parent_support": 34,
+              "support": 19,
+              "support_retention": 0.5588235294117647,
+              "parent_density_lift": 6.124432984740892,
+              "density_lift": 6.346790579155455,
+              "marginal_density_lift": 0.2223575944145626
+            },
+            {
+              "condition": "payment_method=upi",
+              "parent_support": 19,
+              "support": 11,
+              "support_retention": 0.5789473684210527,
+              "parent_density_lift": 6.346790579155455,
+              "density_lift": 11.116174752381806,
+              "marginal_density_lift": 4.769384173226351
+            }
+          ]
+        }
+      ]
+    },
+    "reference_window_count": 6903,
+    "evaluation_window_count": 1719,
+    "scoring": {
+      "score_space": "rank_preserving_isotonic_probability",
+      "degraded": false,
+      "reason": null
+    }
+  },
+  "business": {
+    "false_positive_cost_inr": 50224.68000000001,
+    "fraud_loss_missed_inr": 18171.85,
+    "fraud_exposure_captured_inr": 1153387.28,
+    "legitimate_value_disrupted_inr": 545282.6,
+    "analyst_review_cost_inr": 750.0,
+    "customer_friction_cost_inr": 6520.0,
+    "net_risk_benefit_inr": 1095892.6,
+    "assumption_scope": "synthetic_evaluation_proxy"
+  },
+  "sensitivity": [
+    {
+      "parameter": "analyst_review_cost_inr",
+      "value": 0.0,
+      "net_risk_benefit_inr": 1096642.6
+    },
+    {
+      "parameter": "analyst_review_cost_inr",
+      "value": 125.0,
+      "net_risk_benefit_inr": 1096267.6
+    },
+    {
+      "parameter": "analyst_review_cost_inr",
+      "value": 250.0,
+      "net_risk_benefit_inr": 1095892.6
+    },
+    {
+      "parameter": "analyst_review_cost_inr",
+      "value": 500.0,
+      "net_risk_benefit_inr": 1095142.6
+    },
+    {
+      "parameter": "analyst_review_cost_inr",
+      "value": 1000.0,
+      "net_risk_benefit_inr": 1093642.6
+    },
+    {
+      "parameter": "customer_friction_cost_inr",
+      "value": 0.0,
+      "net_risk_benefit_inr": 1102412.6
+    },
+    {
+      "parameter": "customer_friction_cost_inr",
+      "value": 20.0,
+      "net_risk_benefit_inr": 1099152.6
+    },
+    {
+      "parameter": "customer_friction_cost_inr",
+      "value": 40.0,
+      "net_risk_benefit_inr": 1095892.6
+    },
+    {
+      "parameter": "customer_friction_cost_inr",
+      "value": 80.0,
+      "net_risk_benefit_inr": 1089372.6
+    },
+    {
+      "parameter": "customer_friction_cost_inr",
+      "value": 160.0,
+      "net_risk_benefit_inr": 1076332.6
+    }
+  ],
+  "policy": {
+    "evaluated_incidents": 3,
+    "production_action": "human_escalation",
+    "candidate_action": "enhanced_monitoring",
+    "production_expected_reward_inr": -916.75,
+    "candidate_expected_reward_inr": -1808.8,
+    "production_uses_learned_artifact": false,
+    "safety_policy_violations": 0,
+    "automatic_promotion": false,
+    "assumptions_version": "action-effects-v1",
+    "notes": [
+      "The operative action is the production ranking; the candidate is scored for comparison only and never executes.",
+      "No automatic promotion path exists in code; promotion and rollback require an authenticated admin.",
+      "No production policy artifact is registered, so production is the conservative fixed ranking headed by human_escalation."
+    ]
+  },
+  "agent": {
+    "deterministic_policy_violations": 0,
+    "llm_authorized_actions": 0,
+    "financial_values_produced_by_llm": 0,
+    "live_agent_narrative_metrics": "not measured in this run: grounding accuracy, verification rejection rate, recommendation acceptance and override rates require the running stack with an LLM credential, which was unavailable at freeze time"
+  },
+  "figures": [
+    "precision_recall.png",
+    "risk_density_timeline.png",
+    "sensitivity_review_cost.png"
+  ],
+  "integrity": {
+    "protocol": "Fit on train, calibrate on the train tail, select thresholds on validation, touch the test holdout once.",
+    "leakage": {
+      "train_rows": 18000,
+      "validation_rows": 6000,
+      "test_feature_rows": 6000,
+      "model_feature_count": 26,
+      "train_end": "2026-05-24T23:53:28",
+      "validation_start": "2026-05-25T00:00:45",
+      "validation_end": "2026-06-11T23:54:21",
+      "test_start": "2026-06-12T00:01:46"
+    },
+    "access_log_entries": 3,
+    "notes": [
+      "Held-out labels and benign-window annotations are reachable only through the guarded loader, and this script is their only caller.",
+      "Volume lift is emitted as context only and cannot trigger an alert.",
+      "Promotion context raises the required density lift and never suppresses a qualifying spike.",
+      "Chronology verified: train ends 2026-05-24T23:53:28, validation 2026-05-25T00:00:45 to 2026-06-11T23:54:21, test starts 2026-06-12T00:01:46.",
+      "Git metadata was unavailable in this workspace, so the commit hash and working-tree state could not be recorded. This is disclosed rather than substituted.",
+      "DISCLOSURE: this is read 3 of the held-out labels. Reason for this read: integrity wording correction in the generator: replaced an inaccurate single-read note with an explicit per-read disclosure. No model, threshold, detector parameter, or policy changed.. Every read is listed in ACCESS_LOG.md."
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+.agent/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.env
+models/
+mlruns/
+mlflow.db
+logs/
+reports/figures/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db

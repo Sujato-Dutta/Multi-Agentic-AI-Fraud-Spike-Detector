@@ -1,0 +1,41 @@
+version: action-effects-v1
+source: explicit_counterfactual_assumptions
+currency: INR
+notice: Values are scenario assumptions, not measured outcomes; render beside every counterfactual.
+actions:
+  no_action:
+    fraud_stop_rate: 0.00
+    legitimate_block_rate: 0.00
+    friction_per_legitimate_customer: 0.00
+    analyst_review_load: 0.00
+    delay_hours: 24.00
+  enhanced_monitoring:
+    fraud_stop_rate: 0.10
+    legitimate_block_rate: 0.00
+    friction_per_legitimate_customer: 0.10
+    analyst_review_load: 0.10
+    delay_hours: 4.00
+  step_up_verification:
+    fraud_stop_rate: 0.70
+    legitimate_block_rate: 0.03
+    friction_per_legitimate_customer: 1.00
+    analyst_review_load: 0.05
+    delay_hours: 0.25
+  temporary_defensive_rule:
+    fraud_stop_rate: 0.92
+    legitimate_block_rate: 0.20
+    friction_per_legitimate_customer: 1.00
+    analyst_review_load: 0.10
+    delay_hours: 0.10
+  manual_review:
+    fraud_stop_rate: 0.55
+    legitimate_block_rate: 0.01
+    friction_per_legitimate_customer: 0.15
+    analyst_review_load: 1.00
+    delay_hours: 2.00
+  human_escalation:
+    fraud_stop_rate: 0.45
+    legitimate_block_rate: 0.00
+    friction_per_legitimate_customer: 0.10
+    analyst_review_load: 1.50
+    delay_hours: 4.00

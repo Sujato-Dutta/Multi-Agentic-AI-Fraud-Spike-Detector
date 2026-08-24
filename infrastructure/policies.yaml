@@ -1,0 +1,30 @@
+version: safety-v2
+global:
+  legitimate_value_ceiling_inr: 100000
+  segment_breadth_ceiling: 0.25
+  grounding_score_floor: 0.70
+  confidence_score_floor: 0.60
+escalation:
+  high_impact_inr: 500000
+  low_grounding_score: 0.50
+  broad_segment_ratio: 0.15
+  high_novelty_score: 0.80
+actions:
+  no_action:
+    outcome: allow
+  enhanced_monitoring:
+    outcome: require_approval
+  step_up_verification:
+    outcome: require_approval
+  manual_review:
+    outcome: require_approval
+  human_escalation:
+    outcome: require_approval
+  temporary_defensive_rule:
+    outcome: require_approval
+    legitimate_value_ceiling_inr: 50000
+    segment_breadth_ceiling: 0.10
+  promote_policy:
+    outcome: require_approval
+  rollback_policy:
+    outcome: require_approval
