@@ -274,6 +274,12 @@ class IncidentRepository:
         statement = statement.order_by(Incident.detected_at.desc()).limit(limit).offset(offset)
         return list((await self.session.scalars(statement)).unique().all())
 
+    async def count(self, *, status: str | None = None) -> int:
+        statement = select(func.count()).select_from(Incident)
+        if status is not None:
+            statement = statement.where(Incident.status == status)
+        return int(await self.session.scalar(statement) or 0)
+
     async def timeline(self, incident_id: str) -> list[TimelineEntry]:
         entries: list[TimelineEntry] = []
         evidence = await self.session.scalars(

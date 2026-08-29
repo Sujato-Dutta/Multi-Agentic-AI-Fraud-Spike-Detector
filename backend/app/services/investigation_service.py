@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from time import perf_counter
 from typing import Any
 
@@ -32,6 +32,7 @@ from backend.app.db.session import SessionFactory
 from backend.app.monitoring.prometheus import INVESTIGATION_LATENCY, INVESTIGATIONS
 
 logger = structlog.get_logger(__name__)
+LocalPublisher = Callable[[str, dict[str, Any]], Awaitable[None]]
 
 
 class InvestigationService:
@@ -42,11 +43,13 @@ class InvestigationService:
         *,
         session_factory: Any = SessionFactory,
         checkpoint_durable: bool = True,
+        local_publisher: LocalPublisher | None = None,
     ) -> None:
         self.graph = graph
         self.settings = settings or get_settings()
         self.session_factory = session_factory
         self.checkpoint_durable = checkpoint_durable
+        self.local_publisher = local_publisher
         self._tasks: set[asyncio.Task[None]] = set()
 
     async def prepare_state(self, incident_id: str) -> InvestigationState:
@@ -88,7 +91,7 @@ class InvestigationService:
             )
             await repository.set_status(incident_id, "investigating")
             await session.commit()
-            return InvestigationState(
+            prepared = InvestigationState(
                 incident_id=incident.incident_id,
                 trace_id=incident.trace_id or incident.incident_id,
                 detector_output=dict(incident.detector_output),
@@ -107,6 +110,12 @@ class InvestigationService:
                 degraded=not self.checkpoint_durable,
                 status="prepared",
             )
+        if self.local_publisher is not None:
+            await self.local_publisher(
+                "incident_update",
+                {"incident_id": incident_id, "status": "investigating"},
+            )
+        return prepared
 
     async def investigate(self, incident_id: str) -> InvestigationState:
         started = perf_counter()
@@ -260,8 +269,14 @@ class InvestigationService:
                         f"{gate.get('rule_id', 'unknown')}"
                     ),
                 )
-            await repository.set_status(incident_id, state.get("status", "investigating"))
+            status = state.get("status", "investigating")
+            await repository.set_status(incident_id, status)
             await session.commit()
+        if self.local_publisher is not None:
+            await self.local_publisher(
+                "incident_update",
+                {"incident_id": incident_id, "status": status},
+            )
 
     async def schedule(self, incident_id: str, _: str) -> None:
         """Start once after incident commit without blocking transaction ingestion."""
@@ -284,6 +299,11 @@ class InvestigationService:
                     incident_id, "investigation_failed"
                 )
                 await session.commit()
+            if self.local_publisher is not None:
+                await self.local_publisher(
+                    "incident_update",
+                    {"incident_id": incident_id, "status": "investigation_failed"},
+                )
 
     async def close(self) -> None:
         if not self._tasks:

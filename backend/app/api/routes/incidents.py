@@ -57,8 +57,10 @@ async def list_incidents(
     offset: int = Query(0, ge=0),
 ) -> dict[str, Any]:
     async with request.app.state.session_factory() as session:
-        rows = await IncidentRepository(session).list(status=status, limit=limit, offset=offset)
-    return {"items": [_incident(row) for row in rows], "count": len(rows)}
+        repository = IncidentRepository(session)
+        rows = await repository.list(status=status, limit=limit, offset=offset)
+        count = await repository.count(status=status)
+    return {"items": [_incident(row) for row in rows], "count": count}
 
 
 @router.get("/{incident_id}")

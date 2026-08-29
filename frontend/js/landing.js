@@ -1,27 +1,76 @@
-/** Landing page: role quick-fill, authentication, and the video/animated preview swap. */
+/** Landing page: sign-in modal, authentication, and the hero video player. */
 
 import { api, session } from "./api.js";
-import { attachRipples, toast } from "./ui.js";
-
-const form = document.getElementById("login-form");
-const status = document.getElementById("login-status");
-const submit = document.getElementById("login-submit");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-
-attachRipples(document);
+import { toast } from "./ui.js";
 
 if (session.isAuthenticated) {
   window.location.replace("/pages/dashboard.html");
 }
 
+/* Sign-in modal ------------------------------------------------------------ */
+const modal = document.getElementById("signin-modal");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+let lastFocus = null;
+
+function openSignin() {
+  lastFocus = document.activeElement;
+  modal.hidden = false;
+  document.body.style.overflow = "hidden";
+  window.requestAnimationFrame(() => usernameInput.focus());
+}
+
+function closeSignin() {
+  modal.hidden = true;
+  document.body.style.overflow = "";
+  if (lastFocus instanceof HTMLElement) lastFocus.focus();
+}
+
+document.querySelectorAll("[data-open-signin]").forEach((trigger) => {
+  trigger.addEventListener("click", openSignin);
+});
+
+document.querySelectorAll("[data-close-signin]").forEach((trigger) => {
+  trigger.addEventListener("click", closeSignin);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !modal.hidden) closeSignin();
+});
+
+/* Role quick-fill + authentication ---------------------------------------- */
+const form = document.getElementById("login-form");
+const status = document.getElementById("login-status");
+const submit = document.getElementById("login-submit");
+
+/* Seeded demo logins are served only in a local/dev environment and read from .env,
+   so no credential is ever baked into the shipped frontend. */
+let demoCredentials = null;
+function loadDemoCredentials() {
+  if (!demoCredentials) {
+    demoCredentials = fetch("/api/auth/demo-credentials", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .catch(() => null);
+  }
+  return demoCredentials;
+}
+
 document.querySelectorAll(".role-chip").forEach((chip) => {
-  chip.addEventListener("click", () => {
+  chip.addEventListener("click", async () => {
     document.querySelectorAll(".role-chip").forEach((other) => {
       other.setAttribute("aria-pressed", String(other === chip));
     });
-    usernameInput.value = chip.dataset.username;
-    passwordInput.focus();
+    const role = chip.dataset.role;
+    const creds = await loadDemoCredentials();
+    const entry = creds && creds.roles ? creds.roles[role] : null;
+    if (entry) {
+      usernameInput.value = entry.username;
+      passwordInput.value = entry.password;
+      status.textContent = "Demo credentials filled from your local environment.";
+    } else {
+      usernameInput.value = role;
+      passwordInput.focus();
+    }
   });
 });
 
@@ -54,21 +103,15 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-/* Use a real demo clip when one is committed; otherwise keep the animated preview. */
+/* Hero video: always autoplay on a muted loop; nudge play() if the attribute is ignored. */
 const video = document.getElementById("demo-video");
-const fallback = document.getElementById("showcase-fallback");
-const caption = document.getElementById("showcase-caption");
-
-fetch("/assets/videos/demo.mp4", { method: "HEAD" })
-  .then((response) => {
-    if (!response.ok) return;
-    video.hidden = false;
-    fallback.hidden = true;
-    caption.textContent = "Recorded product walkthrough";
-    video.play().catch(() => {
-      /* autoplay blocked; the poster frame still reads well */
-    });
-  })
-  .catch(() => {
-    /* no clip committed: the animated preview stays, which is the honest default */
-  });
+if (video) {
+  const ensurePlaying = () => {
+    video.muted = true;
+    const attempt = video.play();
+    if (attempt && typeof attempt.catch === "function") attempt.catch(() => {});
+  };
+  video.addEventListener("loadedmetadata", ensurePlaying);
+  video.addEventListener("canplay", ensurePlaying);
+  ensurePlaying();
+}

@@ -34,6 +34,14 @@
   --ai-bright: #a99bff;
   --ai-dim: rgba(139, 125, 251, 0.14);
 
+  /* Brand orange: hero gradient, primary CTAs, focus energy */
+  --orange: #ff7a1a;
+  --orange-bright: #ffa24d;
+  --orange-deep: #f4600f;
+  --orange-dim: rgba(255, 122, 26, 0.14);
+  --orange-line: rgba(255, 122, 26, 0.44);
+  --orange-glow: 0 18px 46px -18px rgba(255, 122, 26, 0.62);
+
   --critical: #ff5470;
   --critical-bright: #ff7d92;
   --critical-dim: rgba(255, 84, 112, 0.14);

@@ -118,7 +118,7 @@ function build(main) {
         el("div", { class: "panel__body", id: "policy-gate" }),
       ]),
 
-      el("section", { class: "col-6 hitl anim-rise", id: "hitl-panel" }),
+      el("section", { class: "col-6 hitl anim-rise", id: "hitl-panel", tabindex: "-1" }),
 
       el("section", { class: "col-6 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
@@ -159,6 +159,13 @@ async function load() {
     api.audit(incidentId).catch(() => null),
   ]);
   setState({ selectedIncident: incident, investigation, review, audit });
+  if (review && window.location.hash === "#hitl-panel") {
+    window.requestAnimationFrame(() => {
+      const panel = document.getElementById("hitl-panel");
+      panel?.scrollIntoView({ behavior: "smooth", block: "center" });
+      panel?.focus({ preventScroll: true });
+    });
+  }
   if (!review) {
     const note = document.getElementById("response-assumptions");
     if (note && !note.textContent) {

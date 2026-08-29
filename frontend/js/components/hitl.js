@@ -6,10 +6,12 @@ import { clear, el, emptyState, fmt, toast } from "../ui.js";
 
 const REASON_CODES = [
   "confirmed_risk",
+  "false_positive",
   "insufficient_evidence",
-  "customer_impact_too_broad",
-  "known_benign_event",
-  "needs_specialist_review",
+  "customer_impact",
+  "segment_too_broad",
+  "policy_violation",
+  "needs_specialist",
   "other",
 ];
 
@@ -51,6 +53,7 @@ export function renderReviewPanel(state) {
   clear(container);
   const review = state.review;
   if (!review) {
+    delete container.dataset.pending;
     container.append(
       el("div", { class: "panel__body" }, [
         emptyState("No pending review", "Select an incident awaiting human review"),
@@ -62,6 +65,7 @@ export function renderReviewPanel(state) {
   const recommendation = review.recommendation || {};
   const allowed = review.allowed_actions || [];
   const durable = review.checkpoint_durable !== false;
+  container.dataset.pending = "true";
 
   const select = el(
     "select",
@@ -84,7 +88,7 @@ export function renderReviewPanel(state) {
   container.append(
     el("div", { class: "panel__head" }, [
       el("div", {}, [
-        el("h2", { text: "Analyst decision" }),
+        el("h2", { text: "Human decision required" }),
         el("p", { text: `Recommended: ${fmt.words(recommendation.action || "n/a")}` }),
       ]),
       el("div", { class: "spacer" }),

@@ -101,6 +101,11 @@ Copy-Item .env.example .env
 Open `.env` and replace the values in the **REQUIRED** section. Optional
 integrations such as Gemini and LangSmith can remain blank.
 
+For Supabase, use the PostgreSQL connection strings from its **Connect** dialog:
+`DATABASE_URL` needs the `postgresql+asyncpg://` driver and `ssl=require`;
+`CHECKPOINT_DATABASE_URL` needs `postgresql://` and `sslmode=require`. An
+`https://<project>.supabase.co` API URL is not valid for either setting.
+
 ### 3. Start the infrastructure
 
 Make sure Docker Desktop is running, then execute:
@@ -130,11 +135,23 @@ script installs the event loop required by psycopg.
 
 ### 6. Stream sample transactions
 
-Open another PowerShell terminal, activate the virtual environment, and run:
+Open another PowerShell terminal and activate the virtual environment. Start with
+a small replay that publishes immediately:
+
+```powershell
+python scripts\stream_transactions.py --split validation --limit 250 --no-wait
+```
+
+To simulate the original event timeline, use:
 
 ```powershell
 python scripts\stream_transactions.py --split validation --speed 300
 ```
+
+`--speed 300` means 300 event-time seconds per real second, not 300 transactions
+per second. The complete validation timeline takes about 86 minutes at that speed.
+The command now prints its plan, connection state, progress, and estimated minimum
+time remaining.
 
 ## Service URLs
 

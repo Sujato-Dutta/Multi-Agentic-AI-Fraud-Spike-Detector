@@ -50,13 +50,28 @@ def main() -> int:
 
     import uvicorn
 
-    uvicorn.run(
+    if args.reload or sys.platform != "win32":
+        uvicorn.run(
+            "backend.app.main:app",
+            host=args.host,
+            port=args.port,
+            reload=args.reload,
+            log_level=args.log_level,
+            loop="asyncio",
+        )
+        return 0
+
+    config = uvicorn.Config(
         "backend.app.main:app",
         host=args.host,
         port=args.port,
-        reload=args.reload,
         log_level=args.log_level,
         loop="asyncio",
+    )
+    server = uvicorn.Server(config)
+    asyncio.run(
+        server.serve(),
+        loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector()),
     )
     return 0
 

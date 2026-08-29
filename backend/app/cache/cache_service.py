@@ -166,6 +166,29 @@ class CacheService:
     ) -> bool:
         return await self._set_json(key, value, "set", ttl_seconds=ttl_seconds, nx=nx)
 
+    async def claim_json(
+        self,
+        key: str,
+        value: object,
+        *,
+        ttl_seconds: int | None = None,
+    ) -> bool | None:
+        """Atomically claim a Redis key without process-local fallback.
+
+        ``None`` means Redis could not confirm the claim. Callers using this for
+        lifecycle coordination must fail closed rather than treat it as a cache miss.
+        """
+
+        ttl = self._ttl(ttl_seconds)
+        payload = orjson.dumps(value, default=_json_default)
+        try:
+            stored = bool(await self.redis.raw.set(key, payload, ex=ttl, nx=True))
+        except REDIS_OPERATION_ERRORS as exc:
+            self._redis_failure("claim", exc, fallback=False)
+            return None
+        self._redis_success()
+        return stored
+
     async def get_feature(self, transaction_id: str) -> Any | None:
         return await self._get_json(keys.feature_key(transaction_id), "feature_get")
 

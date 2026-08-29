@@ -1,6 +1,6 @@
 /** Risk dashboard: live traffic, risk-density trend, incident cards, alerts, drift. */
 
-import { api } from "./api.js";
+import { api, session } from "./api.js";
 import { bootstrap } from "./app.js";
 import { renderAlertCenter } from "./components/alerts.js";
 import {
@@ -12,11 +12,28 @@ import {
 } from "./components/metrics.js";
 import { appendLiveTransaction, seedTicker, tickerShell } from "./components/transactions.js";
 import { setState, subscribe } from "./state.js";
-import { clear, el, emptyState, fmt, severityTone } from "./ui.js";
+import { clear, el, emptyState, fmt, severityTone, toast } from "./ui.js";
+
+let demoPollTimer = null;
+let incidentRefreshSequence = 0;
+const demoControl =
+  session.role === "admin"
+    ? el("div", { class: "demo-stream-control" }, [
+        el("button", {
+          class: "btn btn--primary btn--sm",
+          id: "demo-stream-button",
+          type: "button",
+          text: "Start demo stream",
+          onClick: startDemoStream,
+        }),
+        el("span", { class: "demo-stream-status", id: "demo-stream-status", text: "Ready" }),
+      ])
+    : null;
 
 bootstrap({
   title: "Risk Operations",
   subtitle: "Risk-density spike detection · volume is context only",
+  actions: demoControl ? [demoControl] : [],
   build,
   load,
   onLive: handleLive,
@@ -25,6 +42,13 @@ bootstrap({
 function build(main) {
   main.append(
     el("div", { class: "page-grid" }, [
+      el("section", {
+        class: "col-12 spike-review-banner",
+        id: "pending-review-warning",
+        role: "alert",
+        "aria-live": "assertive",
+        hidden: true,
+      }),
       el("section", { class: "col-12 metric-grid stagger", "aria-label": "Key metrics" }, [
         metricTile({ id: "m-transactions", label: "Transactions scored", tone: "accent" }),
         metricTile({ id: "m-highrisk", label: "High-risk transactions", tone: "critical", spark: true }),
@@ -32,7 +56,21 @@ function build(main) {
         metricTile({ id: "m-exposure", label: "Estimated exposure", tone: "ai", spark: true }),
       ]),
 
-      el("section", { class: "col-8 panel anim-rise" }, [
+      el("section", { class: "col-12 panel anim-rise" }, [
+        el("div", { class: "panel__head" }, [
+          el("div", {}, [
+            el("h2", { text: "Active incidents" }),
+            el("p", { text: "Ranked by detection time" }),
+          ]),
+          el("div", { class: "spacer" }),
+          el("a", { class: "btn btn--ghost btn--sm", href: "/pages/incidents.html", text: "All incidents" }),
+        ]),
+        el("div", { class: "panel__body" }, [
+          el("div", { class: "response-grid", id: "incident-cards" }),
+        ]),
+      ]),
+
+      el("section", { class: "col-12 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
           el("div", {}, [
             el("h2", { text: "Risk density trend" }),
@@ -63,7 +101,7 @@ function build(main) {
         ]),
       ]),
 
-      el("section", { class: "col-4 panel anim-rise" }, [
+      el("section", { class: "col-6 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
           el("div", {}, [
             el("h2", { text: "Live transactions" }),
@@ -76,21 +114,7 @@ function build(main) {
         el("div", { class: "panel__foot" }, [el("span", { id: "cache-summary", text: "Cache idle" })]),
       ]),
 
-      el("section", { class: "col-8 panel anim-rise" }, [
-        el("div", { class: "panel__head" }, [
-          el("div", {}, [
-            el("h2", { text: "Active incidents" }),
-            el("p", { text: "Ranked by detection time" }),
-          ]),
-          el("div", { class: "spacer" }),
-          el("a", { class: "btn btn--ghost btn--sm", href: "/pages/incidents.html", text: "All incidents" }),
-        ]),
-        el("div", { class: "panel__body" }, [
-          el("div", { class: "response-grid", id: "incident-cards" }),
-        ]),
-      ]),
-
-      el("section", { class: "col-4 panel anim-rise" }, [
+      el("section", { class: "col-6 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
           el("div", {}, [el("h2", { text: "Alert center" }), el("p", { text: "Live operational notices" })]),
         ]),
@@ -133,27 +157,151 @@ function build(main) {
     seedTicker(state);
   });
   subscribe(["incidents"], renderIncidentCards);
+  subscribe(["pendingReviews"], renderPendingReview);
+  subscribe(["demoStream"], renderDemoStream);
   subscribe(["alerts", "dependencies"], renderAlertCenter);
   subscribe(["drift"], renderDrift);
 }
 
-async function load() {
-  const [timeseries, incidents, drift] = await Promise.all([
-    api.timeseries(60),
+async function fetchIncidentViews() {
+  const sequence = ++incidentRefreshSequence;
+  const [recent, pending] = await Promise.all([
     api.incidents({ limit: 12 }),
-    api.drift().catch(() => null),
+    api.incidents({ status: "awaiting_human_review", limit: 12 }),
   ]);
-  setState({ timeseries, incidents: incidents.items || [], drift });
+  if (sequence !== incidentRefreshSequence) return null;
+  return {
+    incidents: recent.items || [],
+    pendingReviews: {
+      items: pending.items || [],
+      count: Number.isFinite(pending.count) ? pending.count : (pending.items || []).length,
+    },
+  };
+}
+
+async function load() {
+  const [timeseries, incidentViews, drift, demoStream] = await Promise.all([
+    api.timeseries(60),
+    fetchIncidentViews(),
+    api.drift().catch(() => null),
+    session.role === "admin"
+      ? api.demoStream().catch((error) => {
+          if (error.status === 404 || error.status === 403) return { state: "unavailable" };
+          throw error;
+        })
+      : null,
+  ]);
+  setState({ timeseries, ...(incidentViews || {}), drift, demoStream });
+  if (["queued", "running"].includes(demoStream?.state)) scheduleDemoPoll();
 }
 
 function handleLive(message) {
   if (message.type === "txn") appendLiveTransaction(message.payload);
-  if (message.type === "alert" || message.type === "incident_update") {
-    api
-      .incidents({ limit: 12 })
-      .then((result) => setState({ incidents: result.items || [] }))
+  if (["alert", "incident_update", "decision_update"].includes(message.type)) {
+    fetchIncidentViews()
+      .then((views) => {
+        if (views) setState(views);
+      })
       .catch(() => {});
   }
+}
+
+async function startDemoStream(event) {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    const result = await api.startDemoStream();
+    setState({ demoStream: result });
+    toast("VAL_S1 is streaming through Redpanda", {
+      tone: "accent",
+      title: "Demo stream started",
+    });
+    scheduleDemoPoll();
+  } catch (error) {
+    toast(error.detail || "Could not start the demo stream", {
+      tone: "critical",
+      title: "Stream not started",
+    });
+    button.disabled = false;
+  }
+}
+
+function scheduleDemoPoll() {
+  clearTimeout(demoPollTimer);
+  demoPollTimer = window.setTimeout(async () => {
+    try {
+      const result = await api.demoStream();
+      setState({ demoStream: result });
+      if (["queued", "running"].includes(result.state)) scheduleDemoPoll();
+    } catch {
+      clearTimeout(demoPollTimer);
+    }
+  }, 1000);
+}
+
+function renderDemoStream(state) {
+  const control = document.querySelector(".demo-stream-control");
+  const button = document.getElementById("demo-stream-button");
+  const status = document.getElementById("demo-stream-status");
+  if (!control || !button || !status) return;
+  const stream = state.demoStream;
+  if (stream?.state === "unavailable") {
+    control.hidden = true;
+    return;
+  }
+  control.hidden = false;
+  const active = ["queued", "running"].includes(stream?.state);
+  const completed = stream?.state === "completed";
+  button.disabled = active;
+  button.textContent =
+    stream?.state === "failed"
+      ? "Retry after reset"
+      : completed
+        ? "Replay demo stream"
+        : active
+          ? "Streaming VAL_S1…"
+          : "Start demo stream";
+  status.textContent = active
+    ? `${fmt.count(stream.published)} / ${fmt.count(stream.total || 0)} · ${stream.percent || 0}%`
+    : completed
+      ? "Run reset_demo.py before replay"
+      : stream?.state === "failed"
+        ? `${stream.error?.detail || "Stream failed"} · reset required`
+        : "Known fraud spike · 600×";
+}
+
+function renderPendingReview(state) {
+  const banner = document.getElementById("pending-review-warning");
+  if (!banner) return;
+  const pending = state.pendingReviews?.items || [];
+  const pendingCount = Number.isFinite(state.pendingReviews?.count)
+    ? state.pendingReviews.count
+    : pending.length;
+  clear(banner);
+  banner.hidden = pending.length === 0;
+  if (!pending.length) return;
+  const incident = pending[0];
+  const detector = incident.detector_output || {};
+  banner.append(
+    el("div", { class: "spike-review-banner__signal", "aria-hidden": "true", text: "!" }),
+    el("div", { class: "spike-review-banner__copy" }, [
+      el("span", { class: "eyebrow", text: "Fraud spike detected" }),
+      el("h2", { text: "Human decision required" }),
+      el("p", {
+        text: `${incident.incident_id} · ${incident.reason} · ${fmt.multiplier(detector.density_lift)} density lift · ${fmt.moneyCompact(incident.exposure_estimate_inr)} exposure`,
+      }),
+    ]),
+    pendingCount > 1
+      ? el("span", { class: "badge", "data-tone": "critical" }, [
+          el("span", { text: `${fmt.count(pendingCount)} pending` }),
+        ])
+      : null,
+    el("a", {
+      class: "btn btn--danger",
+      href: `/pages/investigation.html?incident=${encodeURIComponent(incident.incident_id)}#hitl-panel`,
+      text: "Review decision now",
+    })
+  );
 }
 
 function renderIncidentCards(state) {

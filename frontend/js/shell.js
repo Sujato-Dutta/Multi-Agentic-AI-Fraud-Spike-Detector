@@ -63,6 +63,16 @@ export function requireSession() {
 
 export function mountShell({ title, subtitle, actions = [] }) {
   const app = document.getElementById("app");
+  const mobileRail = window.matchMedia("(max-width: 1080px)");
+  const collapsedKey = "sentinel-risk.rail-collapsed";
+  let storedCollapsed = false;
+  try {
+    storedCollapsed = window.localStorage.getItem(collapsedKey) === "true";
+  } catch {
+    // Storage can be unavailable in privacy-restricted browser contexts.
+  }
+  app.dataset.railCollapsed = String(storedCollapsed);
+
   const strip = el("div", { class: "health-strip", id: "health-strip" }, [
     el("span", { class: "health-strip__label", text: "Dependencies" }),
     el("div", { class: "health-strip__items", id: "health-items", "aria-live": "polite" }, [
@@ -75,13 +85,22 @@ export function mountShell({ title, subtitle, actions = [] }) {
   ]);
 
   const rail = el("nav", { class: "rail", id: "rail", "aria-label": "Primary" }, [
-    el("a", { class: "rail__brand", href: "/pages/dashboard.html" }, [
+    el("a", {
+      class: "rail__brand",
+      href: "/pages/dashboard.html",
+      "aria-label": "Sentinel Risk dashboard",
+      title: "Sentinel Risk",
+    }, [
       el("span", { class: "brand-mark", html: ICONS.shield, "aria-hidden": "true" }),
-      el("span", { class: "brand-text" }, [
-        el("strong", { text: "Sentinel Risk" }),
-        el("span", { text: "Fraud Spike Command" }),
-      ]),
+      el("span", { class: "brand-text" }, [el("strong", { text: "Sentinel Risk" })]),
     ]),
+    el("button", {
+      class: "rail-collapse",
+      id: "rail-collapse",
+      type: "button",
+      "aria-controls": "rail",
+      html: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m14.5 6-6 6 6 6"/></svg>',
+    }),
     ...NAV.flatMap((group) => [
       el("p", { class: "rail__section", text: group.section }),
       el(
@@ -93,13 +112,15 @@ export function mountShell({ title, subtitle, actions = [] }) {
             {
               class: "nav-link",
               href: item.href,
+              "aria-label": item.label,
+              title: item.label,
               "aria-current": window.location.pathname.endsWith(item.href.split("/").pop())
                 ? "page"
                 : null,
             },
             [
               el("span", { html: ICONS[item.icon], "aria-hidden": "true" }),
-              el("span", { text: item.label }),
+              el("span", { class: "nav-link__label", text: item.label }),
               item.badge
                 ? el("span", { class: "nav-link__badge", id: `nav-badge-${item.badge}`, hidden: true })
                 : null,
@@ -109,20 +130,23 @@ export function mountShell({ title, subtitle, actions = [] }) {
       ),
     ]),
     el("div", { class: "rail__footer" }, [
-      el("a", { href: "http://localhost:3000", target: "_blank", rel: "noreferrer", text: "Grafana dashboards" }),
-      el("a", { href: "http://localhost:5000", target: "_blank", rel: "noreferrer", text: "MLflow registry" }),
+      el("a", {
+        href: "http://127.0.0.1:3000/d/fraud-risk-ops/risk-operations",
+        target: "_blank",
+        rel: "noreferrer",
+        text: "Grafana dashboards",
+      }),
+      el("a", {
+        href: "http://127.0.0.1:5000",
+        target: "_blank",
+        rel: "noreferrer",
+        text: "MLflow experiments",
+      }),
       el("a", { href: "/metrics", target: "_blank", rel: "noreferrer", text: "Prometheus metrics" }),
-      el("span", { class: "eyebrow", text: "Costs marked as assumptions" }),
     ]),
   ]);
 
   const header = el("header", { class: "header" }, [
-    el("button", {
-      class: "btn btn--ghost btn--sm rail-toggle",
-      id: "rail-toggle",
-      "aria-label": "Toggle navigation",
-      html: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
-    }),
     el("div", { class: "header__title" }, [
       el("h1", { text: title }),
       el("p", { id: "header-subtitle", text: subtitle }),
@@ -154,10 +178,57 @@ export function mountShell({ title, subtitle, actions = [] }) {
   app.append(strip, rail, header, main);
   attachRipples(document);
 
-  document.getElementById("rail-toggle").addEventListener("click", () => {
-    const open = rail.dataset.open === "true";
-    rail.dataset.open = String(!open);
+  const collapseButton = document.getElementById("rail-collapse");
+
+  const setMobileOpen = (open) => {
+    rail.dataset.open = String(open);
+  };
+
+  const syncCollapseButton = () => {
+    const collapsed = app.dataset.railCollapsed === "true";
+    const mobileOpen = rail.dataset.open === "true";
+    const label = mobileRail.matches
+      ? mobileOpen
+        ? "Close navigation"
+        : "Open navigation"
+      : collapsed
+        ? "Expand navigation"
+        : "Collapse navigation";
+    collapseButton.setAttribute("aria-label", label);
+    collapseButton.setAttribute("aria-expanded", String(mobileRail.matches ? mobileOpen : !collapsed));
+    collapseButton.title = label;
+  };
+
+  collapseButton.addEventListener("click", () => {
+    if (mobileRail.matches) {
+      setMobileOpen(rail.dataset.open !== "true");
+    } else {
+      const collapsed = app.dataset.railCollapsed !== "true";
+      app.dataset.railCollapsed = String(collapsed);
+      try {
+        window.localStorage.setItem(collapsedKey, String(collapsed));
+      } catch {
+        // The visual state still works when persistence is unavailable.
+      }
+    }
+    syncCollapseButton();
   });
+
+  mobileRail.addEventListener("change", () => {
+    setMobileOpen(false);
+    syncCollapseButton();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && mobileRail.matches && rail.dataset.open === "true") {
+      setMobileOpen(false);
+      syncCollapseButton();
+      collapseButton.focus();
+    }
+  });
+
+  setMobileOpen(false);
+  syncCollapseButton();
 
   setInterval(() => {
     const clock = document.getElementById("shell-clock");

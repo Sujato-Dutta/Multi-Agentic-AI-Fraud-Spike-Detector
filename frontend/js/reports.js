@@ -6,7 +6,6 @@
 
 import { api } from "./api.js";
 import { bootstrap } from "./app.js";
-import { renderBars } from "./charts.js";
 import { setState, subscribe } from "./state.js";
 import { clear, el, emptyState, fmt } from "./ui.js";
 
@@ -248,15 +247,30 @@ function renderSensitivity(report) {
     node.append(emptyState("No sensitivity analysis in report"));
     return;
   }
-  const canvas = el("canvas", { id: "sensitivity-chart", role: "img", "aria-label": "Net risk benefit sensitivity" });
-  node.append(el("div", { class: "chart-shell chart-shell--short" }, [canvas]));
-  renderBars(
-    canvas,
-    rows.map((entry) => ({
-      label: `${fmt.words(entry.parameter)} ${entry.value}`,
-      value: entry.net_risk_benefit_inr,
-      display: fmt.moneyCompact(entry.net_risk_benefit_inr),
-    }))
+
+  const maxBenefit = Math.max(
+    ...rows.map((entry) => Math.abs(Number(entry.net_risk_benefit_inr) || 0)),
+    1
+  );
+  node.append(
+    el(
+      "div",
+      { class: "sensitivity-list" },
+      rows.map((entry) => {
+        const value = Number(entry.net_risk_benefit_inr) || 0;
+        const width = Math.min((Math.abs(value) / maxBenefit) * 100, 100);
+        return el("div", { class: "sensitivity-bar" }, [
+          el("span", {
+            class: "sensitivity-bar__label",
+            text: `${fmt.words(entry.parameter)} ${entry.value}`,
+          }),
+          el("span", { class: "sensitivity-bar__track", "aria-hidden": "true" }, [
+            el("span", { class: "sensitivity-bar__fill", style: `width: ${width}%` }),
+          ]),
+          el("span", { class: "sensitivity-bar__value", text: fmt.moneyCompact(value) }),
+        ]);
+      })
+    )
   );
   node.append(
     el("p", {
@@ -286,8 +300,11 @@ function renderPolicy(report) {
     policy.notes.forEach((note) => node.append(el("p", { class: "report-note", text: note })));
   }
   if (report.agent) {
+    const agentMetrics = Object.entries(report.agent).filter(
+      ([key]) => key !== "live_agent_narrative_metrics"
+    );
     node.append(
-      el("dl", { class: "kv" }, Object.entries(report.agent).flatMap(([key, value]) => [
+      el("dl", { class: "kv" }, agentMetrics.flatMap(([key, value]) => [
         el("dt", { text: fmt.words(key) }),
         el("dd", { text: typeof value === "number" ? fmt.ratio(value, 3) : String(value) }),
       ]))

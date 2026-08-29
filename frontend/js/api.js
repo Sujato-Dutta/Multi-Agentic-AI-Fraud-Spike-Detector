@@ -99,6 +99,12 @@ export const api = {
   timeseries: (buckets = 60) => request(`/metrics/timeseries?buckets=${buckets}`),
   drift: () => request("/metrics/drift"),
   heldout: () => request("/metrics/heldout"),
+  demoStream: () => request("/demo/stream"),
+  startDemoStream: () =>
+    request("/demo/stream", {
+      method: "POST",
+      body: { scenario: "validation_spike_val_s1" },
+    }),
   incidents: (params = {}) => {
     const query = new URLSearchParams();
     if (params.status) query.set("status", params.status);

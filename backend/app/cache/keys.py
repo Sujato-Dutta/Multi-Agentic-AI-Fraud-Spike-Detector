@@ -17,6 +17,7 @@ KeyNamespace = Literal[
     "agent_result",
     "rate_limit",
     "session",
+    "demo",
 ]
 
 _PREFIXES: dict[KeyNamespace, str] = {
@@ -27,12 +28,17 @@ _PREFIXES: dict[KeyNamespace, str] = {
     "agent_result": "agent-result:",
     "rate_limit": "rate-limit:",
     "session": "session:",
+    "demo": "demo:",
 }
 ALL_PREFIXES = frozenset(_PREFIXES.values())
 
 
 def namespace_prefix(namespace: KeyNamespace) -> str:
     return _PREFIXES[namespace]
+
+
+def demo_stream_key(scenario: str) -> str:
+    return _key("demo", "stream", scenario)
 
 
 def transaction_key(transaction_id: str) -> str:

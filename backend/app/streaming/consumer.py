@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 
 import structlog
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer, TopicPartition
 from aiokafka.errors import KafkaError
 from prometheus_client import Counter, Gauge
 
@@ -49,6 +50,8 @@ class EventConsumer:
         self._started = False
         self._stop = asyncio.Event()
         self._lagging_partitions: set[str] = set()
+        self._handler_failures: dict[tuple[str, int, int], int] = {}
+        self._handler_logs: dict[tuple[str, int, int], tuple[str, float]] = {}
 
     async def start(self) -> None:
         if self._started:
@@ -85,13 +88,70 @@ class EventConsumer:
             async for message in self._consumer:
                 if self._stop.is_set():
                     break
-                await self.handle_message(message)
+                await self._handle_with_retry(message)
         except asyncio.CancelledError:
             raise
         except (KafkaError, OSError, TimeoutError) as exc:
             self.state.mark_down("stream", f"{type(exc).__name__}: {exc}"[:500])
             logger.error("stream_consumer_stopped", reason=str(exc))
             raise
+        except Exception as exc:
+            self.state.mark_down("stream", f"{type(exc).__name__}: {exc}"[:500])
+            logger.exception("stream_consumer_stopped", reason=str(exc)[:500])
+            raise
+
+    async def _handle_with_retry(self, message: Any) -> object | None:
+        key = (message.topic, message.partition, message.offset)
+        try:
+            result = await self.handle_message(message)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - seek keeps the failed offset retryable
+            failures = self._handler_failures.get(key, 0) + 1
+            self._handler_failures[key] = failures
+            reason = f"{type(exc).__name__}: {exc}"[:500]
+            self.state.mark_degraded(
+                "stream", f"handler:{message.topic}:{reason}"[:500]
+            )
+            delay = min(
+                self.settings.stream_handler_retry_max_seconds,
+                0.5 * (2 ** min(failures - 1, 20)),
+            )
+            last_reason, last_logged_at = self._handler_logs.get(key, ("", 0.0))
+            now = time.monotonic()
+            if (
+                reason != last_reason
+                or now - last_logged_at
+                >= self.settings.stream_handler_log_interval_seconds
+            ):
+                logger.warning(
+                    "stream_handler_retry",
+                    topic=message.topic,
+                    partition=message.partition,
+                    offset=message.offset,
+                    reason=reason,
+                    consecutive_failures=failures,
+                    retry_seconds=delay,
+                )
+                self._handler_logs[key] = (reason, now)
+            topic_partition = TopicPartition(message.topic, message.partition)
+            self._consumer.seek(topic_partition, message.offset)
+            try:
+                await asyncio.wait_for(self._stop.wait(), timeout=delay)
+            except TimeoutError:
+                pass
+            return None
+        failures = self._handler_failures.pop(key, 0)
+        self._handler_logs.pop(key, None)
+        if failures:
+            logger.info(
+                "stream_handler_recovered",
+                topic=message.topic,
+                partition=message.partition,
+                offset=message.offset,
+                failed_attempts=failures,
+            )
+        return result
 
     async def handle_message(self, message: Any) -> object:
         envelope = EventEnvelope.decode(message.value)
@@ -105,7 +165,8 @@ class EventConsumer:
             raise
         await self._consumer.commit()
         STREAM_CONSUMED.labels(topic=message.topic, event_type=envelope.event_type).inc()
-        highwater = self._consumer.highwater(message.topic_partition)
+        topic_partition = TopicPartition(message.topic, message.partition)
+        highwater = self._consumer.highwater(topic_partition)
         if highwater is not None:
             lag = max(0, highwater - message.offset - 1)
             partition_key = f"{message.topic}:{message.partition}"

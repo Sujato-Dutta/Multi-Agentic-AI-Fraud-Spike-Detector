@@ -37,6 +37,7 @@ from backend.app.monitoring.drift import DriftMonitor
 from backend.app.monitoring.prometheus import observe_dependencies
 from backend.app.safety.metrics import record_degradation
 from backend.app.safety.policy_engine import PolicyEngine
+from backend.app.services.demo_stream_service import DemoStreamService
 from backend.app.services.evaluation_service import (
     ActionEffects,
     EvaluationService,
@@ -61,6 +62,7 @@ def create_app(
     cache: CacheService | None = None,
     transaction_service: TransactionService | None = None,
     investigation_service: InvestigationService | None = None,
+    demo_stream_service: DemoStreamService | None = None,
     review_service: ReviewService | None = None,
     feedback_service: FeedbackService | None = None,
     policy_engine: PolicyEngine | None = None,
@@ -147,6 +149,13 @@ def create_app(
                 try:
                     if blocker is not None:
                         raise RuntimeError(blocker)
+                    if config.checkpoint_database_url and not checkpoint_url.startswith(
+                        ("postgresql://", "postgres://")
+                    ):
+                        raise ValueError(
+                            "CHECKPOINT_DATABASE_URL must be a PostgreSQL connection URI; "
+                            "HTTP(S) Supabase project URLs are not database connections"
+                        )
                     from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
                     checkpoint_context = AsyncPostgresSaver.from_conn_string(checkpoint_url)
@@ -194,6 +203,7 @@ def create_app(
                 config,
                 session_factory=session_factory,
                 checkpoint_durable=checkpoint_durable,
+                local_publisher=hub.broadcast,
             )
         topics = TopicSet.from_settings(config)
         active_evaluation = EvaluationService(
@@ -275,6 +285,13 @@ def create_app(
         elif not config.stream_consumer_enabled:
             runtime_state.mark_degraded("stream", "consumer_disabled_by_configuration")
 
+        active_demo_stream = demo_stream_service or DemoStreamService(
+            config,
+            producer=producer,
+            cache=cache_service,
+            session_factory=session_factory,
+            runtime_reset=service.reset,
+        )
         application.state.settings = config
         application.state.session_factory = session_factory
         application.state.cache = cache_service
@@ -292,10 +309,12 @@ def create_app(
         application.state.policy_engine = active_policy
         application.state.websocket_hub = hub
         application.state.drift_monitor = drift_monitor
+        application.state.demo_stream_service = active_demo_stream
         observe_dependencies(runtime_state.snapshot())
         try:
             yield
         finally:
+            await active_demo_stream.close()
             await active_investigation.close()
             if consumer_task is not None:
                 consumer_task.cancel()
@@ -327,6 +346,22 @@ def create_app(
         try:
             response = await call_next(request)
             response.headers["x-trace-id"] = trace_id
+            path = request.url.path
+            local_environment = config.app_env.lower() in {
+                "development",
+                "local",
+                "test",
+                "testing",
+            }
+            sensitive_demo_path = path in {
+                "/api/auth/demo-credentials",
+                "/api/demo/stream",
+            }
+            frontend_path = not (
+                path == "/api" or path.startswith("/api/") or path == "/metrics"
+            )
+            if sensitive_demo_path or (local_environment and frontend_path):
+                response.headers["Cache-Control"] = "no-store"
             return response
         finally:
             clear_contextvars()

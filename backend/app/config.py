@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     data_dir: Path = Path("data")
     model_dir: Path = Path("models")
     report_dir: Path = Path("reports")
-    mlflow_tracking_uri: str = "sqlite:///mlflow.db"
+    mlflow_tracking_uri: str = "http://127.0.0.1:5000"
     fraud_primary_model_path: Path = Path("models/fraud/fraud_model.joblib")
     fraud_fallback_model_path: Path = Path("models/fraud/isolation_forest.joblib")
 
@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     cache_max_entries: int = Field(10_000, ge=100)
     cache_default_ttl_seconds: int = Field(300, ge=1)
+    transaction_claim_ttl_seconds: int = Field(60, ge=5, le=3600)
 
     redpanda_bootstrap_servers: str = "localhost:19092"
     redpanda_client_id: str = "fraud-detector"
@@ -99,6 +100,8 @@ class Settings(BaseSettings):
     stream_consumer_enabled: bool = True
     stream_max_poll_records: int = Field(500, ge=1, le=10_000)
     stream_poll_timeout_ms: int = Field(1000, ge=100, le=60_000)
+    stream_handler_retry_max_seconds: float = Field(30.0, ge=0.1, le=300)
+    stream_handler_log_interval_seconds: float = Field(60.0, ge=1, le=3600)
     outbox_batch_size: int = Field(100, ge=1, le=1000)
     outbox_lease_seconds: int = Field(30, ge=5, le=600)
     outbox_poll_seconds: float = Field(1.0, ge=0.1, le=60)

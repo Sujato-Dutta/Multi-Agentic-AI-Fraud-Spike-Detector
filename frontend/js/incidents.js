@@ -20,7 +20,7 @@ bootstrap({
   build,
   load,
   onLive: (message) => {
-    if (message.type === "alert" || message.type === "incident_update") load();
+    if (["alert", "incident_update", "decision_update"].includes(message.type)) load();
   },
 });
 
@@ -131,9 +131,16 @@ function renderRows(state) {
         el("td", { class: "num", text: fmt.count((incident.segments || []).length) }),
         el("td", {}, [
           el("a", {
-            class: "btn btn--sm",
-            href: `/pages/investigation.html?incident=${encodeURIComponent(incident.incident_id)}`,
-            text: "Investigate",
+            class: `btn btn--sm ${
+              incident.status === "awaiting_human_review" ? "btn--danger" : ""
+            }`.trim(),
+            href: `/pages/investigation.html?incident=${encodeURIComponent(incident.incident_id)}${
+              incident.status === "awaiting_human_review" ? "#hitl-panel" : ""
+            }`,
+            text:
+              incident.status === "awaiting_human_review"
+                ? "Review decision"
+                : "Investigate",
           }),
         ]),
       ])

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hmac
 from datetime import UTC, datetime, timedelta
+from ipaddress import ip_address
 from typing import Annotated
 
 import bcrypt
@@ -18,6 +19,26 @@ from backend.app.db.models import User
 from backend.app.schemas import UserIdentity
 
 _bearer = HTTPBearer(auto_error=False)
+LOCAL_DEMO_ENVS = frozenset({"development", "local", "test", "testing"})
+_TEST_CLIENT_HOSTS = frozenset({"testclient"})
+
+
+def require_local_request(request: Request) -> None:
+    """Allow demo-only HTTP surfaces only from the direct loopback peer."""
+
+    environment = request.app.state.settings.app_env.lower()
+    if environment not in LOCAL_DEMO_ENVS:
+        raise AppError("not_found", 404, "Not found")
+
+    host = request.client.host if request.client is not None else None
+    if environment in {"test", "testing"} and host in _TEST_CLIENT_HOSTS:
+        return
+    try:
+        address = ip_address(host) if host is not None else None
+    except ValueError:
+        address = None
+    if address is None or not address.is_loopback:
+        raise AppError("not_found", 404, "Not found")
 
 
 def hash_password(password: str) -> str:

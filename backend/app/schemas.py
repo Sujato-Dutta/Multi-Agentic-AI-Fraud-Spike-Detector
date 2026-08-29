@@ -62,6 +62,12 @@ class TokenResponse(BaseModel):
     role: str
 
 
+class DemoStreamRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scenario: Literal["validation_spike_val_s1"]
+
+
 class UserIdentity(BaseModel):
     username: str
     role: Literal["analyst", "lead_analyst", "admin"]

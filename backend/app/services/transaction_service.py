@@ -241,7 +241,10 @@ class TransactionService:
                         )
                     )
                     continue
-                await self.cache.claim_transaction(ids[index], ttl_seconds=86_400)
+                await self.cache.claim_transaction(
+                    ids[index],
+                    ttl_seconds=self.settings.transaction_claim_ttl_seconds,
+                )
                 await self.cache.set_prediction(ids[index], score, ttl_seconds=86_400)
                 windows = self.aggregator.add(
                     item,
@@ -295,13 +298,19 @@ class TransactionService:
         transaction_id = str(normalized["transaction_id"])
         trace_id = trace_id or str(uuid4())
         normalized["trace_id"] = trace_id
-        claimed = await self.cache.claim_transaction(transaction_id, ttl_seconds=86_400)
+        claimed = await self.cache.claim_transaction(
+            transaction_id,
+            ttl_seconds=self.settings.transaction_claim_ttl_seconds,
+        )
         async with self._lock:
             if not claimed:
                 stored = await self._stored_result(transaction_id)
                 if stored is not None:
                     return stored
-                claimed = await self.cache.claim_transaction(transaction_id, ttl_seconds=86_400)
+                claimed = await self.cache.claim_transaction(
+                    transaction_id,
+                    ttl_seconds=self.settings.transaction_claim_ttl_seconds,
+                )
                 if not claimed:
                     raise AppError("transaction_in_progress", 409, "Transaction is already processing")
             try:

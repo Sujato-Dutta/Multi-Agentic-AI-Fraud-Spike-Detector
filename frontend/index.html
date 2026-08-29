@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sentinel Risk — Multi-Agentic Fraud Spike Detection</title>
+    <title>Multi-Agentic AI Fraud Spike Detector</title>
     <meta
       name="description"
-      content="Risk-density fraud spike detection with evidence-grounded multi-agent investigation and deterministic human-gated response."
+      content="Real-time fraud-spike detection with multi-agent investigation and deterministic, human-governed response. Detection on calibrated risk density, not raw volume."
     />
     <link rel="stylesheet" href="/css/variables.css" />
     <link rel="stylesheet" href="/css/animations.css" />
@@ -15,70 +15,176 @@
   <body>
     <div class="ambient" aria-hidden="true"></div>
 
-    <main class="landing" id="main">
-      <section class="landing__intro">
-        <div class="landing__brand anim-fade">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2 4 5.5v6c0 5 3.4 9.2 8 10.5 4.6-1.3 8-5.5 8-10.5v-6L12 2Z" />
-              <path d="m8.4 12.2 2.3 2.4 4.6-4.8" />
-            </svg>
-          </span>
-          <span class="brand-text">
-            <strong>Sentinel Risk</strong>
-            <span>Fraud Spike Command</span>
-          </span>
+    <header class="nav anim-fade">
+      <a class="nav__brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 4 5.5v6c0 5 3.4 9.2 8 10.5 4.6-1.3 8-5.5 8-10.5v-6L12 2Z" />
+            <path d="m8.4 12.2 2.3 2.4 4.6-4.8" />
+          </svg>
+        </span>
+        <span class="nav__title">Multi-Agentic AI Fraud Spike Detector</span>
+      </a>
+
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#capabilities">Capabilities</a>
+        <a href="#how">How it works</a>
+        <a href="#governance">Governance</a>
+      </nav>
+
+      <div class="nav__actions">
+        <button type="button" class="btn btn--ghost" data-open-signin>Request access</button>
+        <button type="button" class="btn btn--primary" data-open-signin>
+          <span>View demo</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="landing" id="top">
+      <section class="hero">
+        <div class="hero__copy">
+          <p class="hero__eyebrow anim-rise">
+            <span class="dot" aria-hidden="true"></span> AI-POWERED
+            <span class="sep" aria-hidden="true">•</span> HUMAN-GOVERNED
+            <span class="sep" aria-hidden="true">•</span> REAL-TIME
+          </p>
+
+          <h1 class="hero__title anim-rise" style="animation-delay: 80ms">
+            Detect Fraud<br />
+            Spikes Before<br />
+            They <span class="grad">Escalate</span>
+          </h1>
+
+          <p class="hero__sub anim-rise" style="animation-delay: 150ms">
+            Real-time fraud-spike detection with multi-agent investigation. A human reviews every
+            recommendation and a deterministic policy engine authorizes each action to stop fraud
+            and protect revenue.
+          </p>
+
+          <div class="hero__cta anim-rise" style="animation-delay: 220ms">
+            <button type="button" class="btn btn--primary btn--lg" data-open-signin>
+              <span>View demo</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
+            <button type="button" class="btn btn--ghost btn--lg" data-open-signin>Request access</button>
+          </div>
         </div>
 
-        <p class="landing__pill anim-rise" style="animation-delay: 60ms">
-          <span class="live-dot" aria-hidden="true"></span>
-          Risk density, not volume
-        </p>
-
-        <h1 class="landing__title anim-rise" style="animation-delay: 110ms">
-          Catch fraud spikes<br />
-          <span class="grad">before the volume tells you.</span>
-        </h1>
-
-        <p class="landing__sub anim-rise" style="animation-delay: 170ms">
-          Festival surges and fraud attacks look identical on a volume chart. This command center
-          triggers on calibrated risk density, investigates with evidence-verified agents, and lets a
-          deterministic policy engine — never a language model — authorize every action.
-        </p>
-
-        <dl class="landing__proof stagger">
-          <div class="proof-item">
-            <dt>Detection signal</dt>
-            <dd>Calibrated risk density</dd>
+        <div class="hero__panel anim-scale" style="animation-delay: 120ms">
+          <div class="preview">
+            <video
+              id="demo-video"
+              class="preview__video"
+              poster="/assets/images/preview-poster.svg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+            >
+              <source src="/assets/videos/ui_animation.mp4" type="video/mp4" />
+            </video>
           </div>
-          <div class="proof-item">
-            <dt>Investigation</dt>
-            <dd>Claim-level evidence verification</dd>
-          </div>
-          <div class="proof-item">
-            <dt>Authorization</dt>
-            <dd>Deterministic policy + human review</dd>
-          </div>
-          <div class="proof-item">
-            <dt>Learning</dt>
-            <dd>Offline reward, human-gated promotion</dd>
-          </div>
-        </dl>
+        </div>
+      </section>
 
-        <form class="login anim-rise" id="login-form" style="animation-delay: 220ms" novalidate>
-          <h2>Sign in to the command center</h2>
+      <section class="cards" id="capabilities" aria-label="Capabilities">
+        <article class="card stagger-card">
+          <span class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" /><circle cx="12" cy="12" r="8" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
+            </svg>
+          </span>
+          <h3>Real-Time Detection</h3>
+          <p>
+            Streaming transactions are scored and watched on calibrated risk density, so festival
+            and flash-sale surges never trigger an alert on their own.
+          </p>
+        </article>
+
+        <article class="card stagger-card" style="--card-delay: 90ms">
+          <span class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11" />
+            </svg>
+          </span>
+          <h3>Human-Governed Decisions</h3>
+          <p>
+            Agents investigate and recommend, but an analyst approves, modifies, rejects, or
+            escalates, and a deterministic policy engine authorizes every action.
+          </p>
+        </article>
+
+        <article class="card stagger-card" style="--card-delay: 180ms">
+          <span class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 2a4.5 4.5 0 0 0-4.4 5.4A4.5 4.5 0 0 0 6 16.5a4 4 0 0 0 3.5 2.5V2Z" /><path d="M14.5 2a4.5 4.5 0 0 1 4.4 5.4A4.5 4.5 0 0 1 18 16.5a4 4 0 0 1-3.5 2.5V2Z" />
+            </svg>
+          </span>
+          <h3>Shadow Learning</h3>
+          <p>
+            Candidate response policies learn from real outcomes in shadow only. Promotion is an
+            explicit, human-gated step — nothing goes live automatically.
+          </p>
+        </article>
+      </section>
+
+      <section class="workflow" id="how" aria-label="How it works">
+        <p class="section-eyebrow">How it works</p>
+        <h2 class="section-title">From streaming transactions to a governed response</h2>
+        <ol class="workflow__steps stagger">
+          <li><span class="workflow__num">01</span><b>Score &amp; watch</b><span>Calibrated fraud scoring feeds a risk-density spike detector.</span></li>
+          <li><span class="workflow__num">02</span><b>Investigate</b><span>Multi-agent LangGraph gathers evidence and finds the driving segment.</span></li>
+          <li><span class="workflow__num">03</span><b>Verify &amp; gate</b><span>Claims are verified and a deterministic policy gate evaluates the action.</span></li>
+          <li><span class="workflow__num">04</span><b>Human decides</b><span>An analyst approves, modifies, rejects, or escalates — with a full audit trail.</span></li>
+        </ol>
+      </section>
+
+      <section class="closer" id="governance">
+        <div class="closer__card">
+          <h2>Models recommend. People decide. Policy authorizes.</h2>
+          <p>
+            Every claim carries resolvable evidence, every decision is logged, and outcomes feed
+            offline learning that only a human can promote. Sign in with a seeded operator account to
+            open the command center.
+          </p>
+          <button type="button" class="btn btn--primary btn--lg" data-open-signin>
+            <span>Enter command center</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <footer class="landing__footer">
+        <span>Multi-Agentic AI Fraud Spike Detector</span>
+        <span>Risk density, not volume · Evidence-grounded · Human-governed</span>
+      </footer>
+    </main>
+
+    <div class="modal" id="signin-modal" hidden>
+      <div class="modal__scrim" data-close-signin></div>
+      <div class="modal__card anim-scale" role="dialog" aria-modal="true" aria-labelledby="signin-title">
+        <button type="button" class="modal__close" data-close-signin aria-label="Close sign in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        <form class="login" id="login-form" novalidate>
+          <h2 id="signin-title">Sign in to the command center</h2>
           <p>Use a seeded operator account from your environment configuration.</p>
 
           <div class="login__role" role="group" aria-label="Quick role fill">
-            <button type="button" class="role-chip" data-username="analyst" aria-pressed="false">
-              analyst
-            </button>
-            <button type="button" class="role-chip" data-username="lead_analyst" aria-pressed="false">
-              lead_analyst
-            </button>
-            <button type="button" class="role-chip" data-username="admin" aria-pressed="false">
-              admin
-            </button>
+            <button type="button" class="role-chip" data-role="analyst" aria-pressed="false">analyst</button>
+            <button type="button" class="role-chip" data-role="lead_analyst" aria-pressed="false">lead_analyst</button>
+            <button type="button" class="role-chip" data-role="admin" aria-pressed="false">admin</button>
           </div>
 
           <label class="field">
@@ -106,59 +212,8 @@
             Credentials come from your <code>.env</code>; none are bundled with the interface.
           </p>
         </form>
-      </section>
-
-      <section class="showcase" aria-label="Command center preview">
-        <video
-          id="demo-video"
-          poster="/assets/images/preview-poster.svg"
-          muted
-          loop
-          playsinline
-          hidden
-        >
-          <source src="/assets/videos/demo.mp4" type="video/mp4" />
-        </video>
-
-        <div class="showcase__fallback" id="showcase-fallback">
-          <div class="preview-row">
-            <div class="preview-tile">
-              <span>Risk density</span>
-              <b>&times;8.6</b>
-            </div>
-            <div class="preview-tile">
-              <span>Volume lift</span>
-              <b>&times;2.4</b>
-            </div>
-            <div class="preview-tile">
-              <span>Benign surge</span>
-              <b>no alert</b>
-            </div>
-          </div>
-
-          <div class="preview-chart">
-            <svg viewBox="0 0 400 150" preserveAspectRatio="none" role="img" aria-label="Illustrative risk density trend with a shaded spike window">
-              <rect class="preview-chart__spike" x="250" y="6" width="86" height="138" rx="3" />
-              <path
-                class="preview-line"
-                d="M4 118 L36 121 L68 114 L100 119 L132 112 L164 117 L196 110 L228 113 L252 96 L268 62 L284 38 L300 30 L316 44 L332 70 L352 104 L380 112"
-              />
-            </svg>
-          </div>
-
-          <div class="preview-badges">
-            <span class="preview-badge"><span class="live-dot" aria-hidden="true"></span>agent verified</span>
-            <span class="preview-badge">policy gate: approval required</span>
-            <span class="preview-badge">candidate policy: shadow only</span>
-          </div>
-        </div>
-
-        <div class="showcase__bar">
-          <span class="live-dot" aria-hidden="true"></span>
-          <span id="showcase-caption">Illustrative preview — live numbers appear after sign-in</span>
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
     <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
 
