@@ -8,6 +8,8 @@ The system focuses on **risk density** instead of transaction volume. This matte
 because a busy shopping day and a fraud attack can have similar traffic levels,
 but very different fraud rates.
 
+[🎥 Demo Video](https://youtu.be/eCNy2ohO_h0?si=gK5gv1TaJRge94Fc)
+
 ![Multi-Agentic AI Fraud Spike Detector cover](assets/cover.png)
 
 ## What the project does
