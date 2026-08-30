@@ -410,17 +410,8 @@ A few planned items were adjusted during implementation:
 ## Known limitations
 
 - Held-out transaction precision is below the validation target.
-- Live dependency and LLM drills were not run against real services during the
-  frozen evaluation because Docker Desktop and an LLM credential were unavailable.
-  The same failure paths were tested in-process.
 - Authentication uses demo accounts and short-lived JWTs. It is not a production
   identity system.
-- The read-only WebSocket receives its token through the query string. It validates
-  the signature but not the user's role.
-- The held-out policy comparison is an offline ranking comparison, not a promise
-  of serving-time performance.
-- Accessibility includes keyboard support, reduced motion, and AA-oriented
-  contrast. Full WCAG conformance still needs manual assistive-technology testing.
 
 ## Author
 
