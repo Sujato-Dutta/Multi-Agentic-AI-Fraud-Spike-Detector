@@ -47,6 +47,7 @@ function build(main) {
         id: "pending-review-warning",
         role: "alert",
         "aria-live": "assertive",
+        "aria-atomic": "true",
         hidden: true,
       }),
       el("section", { class: "col-12 metric-grid stagger", "aria-label": "Key metrics" }, [
@@ -278,8 +279,10 @@ function renderPendingReview(state) {
     ? state.pendingReviews.count
     : pending.length;
   clear(banner);
-  banner.hidden = pending.length === 0;
-  if (!pending.length) return;
+  if (!pending.length) {
+    banner.hidden = true;
+    return;
+  }
   const incident = pending[0];
   const detector = incident.detector_output || {};
   banner.append(
@@ -291,17 +294,21 @@ function renderPendingReview(state) {
         text: `${incident.incident_id} · ${incident.reason} · ${fmt.multiplier(detector.density_lift)} density lift · ${fmt.moneyCompact(incident.exposure_estimate_inr)} exposure`,
       }),
     ]),
-    pendingCount > 1
-      ? el("span", { class: "badge", "data-tone": "critical" }, [
-          el("span", { text: `${fmt.count(pendingCount)} pending` }),
-        ])
-      : null,
+    ...(pendingCount > 1
+      ? [
+          el("span", { class: "badge", "data-tone": "critical" }, [
+            el("span", { text: `${fmt.count(pendingCount)} pending` }),
+          ]),
+        ]
+      : []),
     el("a", {
       class: "btn btn--danger",
       href: `/pages/investigation.html?incident=${encodeURIComponent(incident.incident_id)}#hitl-panel`,
+      "aria-label": `Review decision for incident ${incident.incident_id}`,
       text: "Review decision now",
     })
   );
+  banner.hidden = false;
 }
 
 function renderIncidentCards(state) {

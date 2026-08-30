@@ -83,8 +83,20 @@ class FeedbackService:
                 )
             await session.commit()
         if self.local_publisher is not None:
-            try:
-                await self.local_publisher("audit_event", result)
-            except Exception as exc:  # noqa: BLE001 - websocket is best effort
-                logger.warning("outcome_websocket_failed", reason=str(exc)[:500])
+            updates = (
+                ("audit_event", result),
+                (
+                    "incident_update",
+                    {"incident_id": row.incident_id, "status": "completed"},
+                ),
+            )
+            for event_type, payload in updates:
+                try:
+                    await self.local_publisher(event_type, payload)
+                except Exception as exc:  # noqa: BLE001 - websocket is best effort
+                    logger.warning(
+                        "outcome_websocket_failed",
+                        event_type=event_type,
+                        reason=str(exc)[:500],
+                    )
         return result

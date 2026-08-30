@@ -142,11 +142,13 @@ class DemoStreamService:
                 updated_at=_now(),
             )
             first_timestamp = frame.iloc[0]["timestamp"].to_pydatetime()
+            previous_timestamp = first_timestamp
             clock = VirtualClock(speed=self.speed, start=first_timestamp)
             for position, (_, row) in enumerate(frame.iterrows(), start=1):
                 timestamp = row["timestamp"].to_pydatetime()
                 if position > 1:
-                    await clock.advance_to(timestamp)
+                    await clock.wait(timestamp - previous_timestamp)
+                previous_timestamp = timestamp
                 payload = {key: _json_value(value) for key, value in row.to_dict().items()}
                 assert self.producer is not None
                 await self.producer.send(
@@ -222,9 +224,13 @@ class DemoStreamService:
         selected = event.iloc[0]
         start = selected["start_timestamp"] - pd.Timedelta(hours=3)
         end = selected["end_timestamp"] + pd.Timedelta(hours=1)
-        frame = split.features.loc[
-            split.features["timestamp"].between(start, end, inclusive="both")
-        ].reset_index(drop=True)
+        frame = (
+            split.features.loc[
+                split.features["timestamp"].between(start, end, inclusive="both")
+            ]
+            .sort_values(["timestamp", "transaction_id"], kind="stable")
+            .reset_index(drop=True)
+        )
         if frame.empty:
             raise AppError("demo_fixture_empty", 503, "The VAL_S1 demo fixture contains no rows")
         if len(frame) > MAX_DEMO_TRANSACTIONS:

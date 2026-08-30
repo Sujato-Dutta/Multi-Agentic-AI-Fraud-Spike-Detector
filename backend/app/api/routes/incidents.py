@@ -27,7 +27,6 @@ def _incident(row: Any) -> dict[str, Any]:
         "reason": row.reason,
         "detector_output": row.detector_output,
         "exposure_estimate_inr": row.exposure_estimate_inr,
-        "trace_id": row.trace_id,
         "segments": [
             {
                 "rank": segment.rank,
@@ -78,16 +77,43 @@ async def incident_detail(incident_id: str, request: Request, _: Analyst) -> dic
     verdicts = _verification_verdicts(verification_payloads)
     rendered = []
     for item in timeline:
-        payload = dict(item.payload)
         if item.kind == "agent_output":
-            payload["payload"] = _display_payload(
-                str(payload.get("agent_name", "")),
-                payload.get("payload", {}),
+            agent_name = str(item.payload.get("agent_name", ""))
+            safe_payload = _display_payload(
+                agent_name,
+                item.payload.get("payload", {}),
                 verdicts,
             )
-        rendered.append(
-            {"timestamp": item.timestamp.isoformat(), "kind": item.kind, "payload": payload}
-        )
+            rendered.append(
+                {
+                    "timestamp": item.timestamp.isoformat(),
+                    "kind": "agent_output",
+                    "payload": {
+                        "agent_name": agent_name,
+                        "status": item.payload.get("status", "completed"),
+                        "result": safe_payload.get("result"),
+                    },
+                }
+            )
+        elif item.kind == "analyst_decision":
+            rendered.append(
+                {
+                    "timestamp": item.timestamp.isoformat(),
+                    "kind": "analyst_decision",
+                    "payload": {
+                        key: item.payload.get(key)
+                        for key in (
+                            "actor_username",
+                            "decision",
+                            "status",
+                            "reason_code",
+                            "reason_text",
+                            "final_action",
+                            "outcome",
+                        )
+                    },
+                }
+            )
     result = _incident(row)
     result["timeline"] = rendered
     return result
@@ -114,13 +140,13 @@ def _display_payload(
     stored_payload: Any,
     verdicts: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
-    """Return citation-safe analyst output while retaining raw payloads in storage."""
+    """Return an allowlisted analyst projection; execution metadata stays in storage."""
 
     payload = dict(stored_payload) if isinstance(stored_payload, dict) else {}
+    result = payload.get("result")
     if agent_name == "evidence_verification":
-        result = payload.get("result", {})
         if not isinstance(result, dict):
-            return {**payload, "result": {}}
+            return {"result": {}}
         safe_verdicts = [
             {
                 "claim_id": item.get("claim_id"),
@@ -130,26 +156,91 @@ def _display_payload(
             for item in result.get("verdicts", [])
             if isinstance(item, dict) and item.get("claim_id")
         ]
-        return {**payload, "result": {**result, "verdicts": safe_verdicts}}
-    if agent_name != "root_cause_hypotheses":
-        return payload
-    safe_hypotheses = []
-    hypotheses = payload.get("result", [])
-    for hypothesis in hypotheses if isinstance(hypotheses, list) else []:
-        if not isinstance(hypothesis, dict):
-            continue
-        claim_id = str(hypothesis.get("claim_id", ""))
-        verification = verdicts.get(claim_id, {})
-        if verification.get("verdict") != "supported":
-            continue
-        safe_hypotheses.append(
-            {
-                **hypothesis,
-                "evidence_ids": list(verification.get("resolved_evidence_ids", [])),
-                "verification_verdict": "supported",
+        return {
+            "result": {
+                "verdicts": safe_verdicts,
+                "grounding_score": result.get("grounding_score"),
+                "rejected_claim_count": result.get("rejected_claim_count"),
             }
+        }
+    if agent_name == "root_cause_hypotheses":
+        safe_hypotheses = []
+        for hypothesis in result if isinstance(result, list) else []:
+            if not isinstance(hypothesis, dict):
+                continue
+            claim_id = str(hypothesis.get("claim_id", ""))
+            verification = verdicts.get(claim_id, {})
+            if verification.get("verdict") != "supported":
+                continue
+            safe_hypotheses.append(
+                {
+                    "claim_id": claim_id,
+                    "statement": hypothesis.get("statement") or hypothesis.get("hypothesis"),
+                    "strength": hypothesis.get("strength"),
+                    "evidence_ids": list(verification.get("resolved_evidence_ids", [])),
+                    "verification_verdict": "supported",
+                }
+            )
+        return {"result": safe_hypotheses}
+    if agent_name == "lead_spike_analysis" and isinstance(result, dict):
+        return {"result": {"summary": result.get("summary")}}
+    if agent_name == "segment_interpretation" and isinstance(result, dict):
+        return {
+            "result": {
+                "name": result.get("name"),
+                "description": result.get("description"),
+                "evidence_ids": list(result.get("evidence_ids", [])),
+            }
+        }
+    if agent_name == "deterministic_impact" and isinstance(result, dict):
+        allowed = (
+            "transaction_count",
+            "fraud_exposure_inr",
+            "false_positive_exposure_inr",
+            "affected_legitimate_value_inr",
         )
-    return {**payload, "result": safe_hypotheses}
+        return {"result": {key: result.get(key) for key in allowed}}
+    if agent_name == "response_recommendations":
+        safe_responses = [
+            {
+                "rank": item.get("rank"),
+                "action": item.get("action"),
+                "rationale": item.get("rationale"),
+                "evidence_ids": list(item.get("evidence_ids", [])),
+            }
+            for item in (result if isinstance(result, list) else [])
+            if isinstance(item, dict)
+        ]
+        return {"result": safe_responses}
+    if isinstance(result, dict):
+        summary = result.get("summary") or result.get("analyst_summary")
+        return {"result": {"summary": summary} if summary else {}}
+    return {"result": [] if isinstance(result, list) else None}
+
+
+def _evidence_summary(evidence_type: str, stored_payload: Any) -> dict[str, Any]:
+    """Return only facts intentionally displayed by the analyst evidence cards."""
+
+    payload = dict(stored_payload) if isinstance(stored_payload, dict) else {}
+    fields = {
+        "window_statistics": (
+            "transaction_count",
+            "density_lift",
+            "volume_lift",
+            "amount_sum_inr",
+        ),
+        "segment_statistics": ("support", "density_lift", "conditions"),
+        "historical_baseline": ("baseline_density", "expected_high_risk_rate"),
+        "similar_incidents": ("count",),
+        "impact_estimate": (
+            "transaction_count",
+            "fraud_exposure_inr",
+            "false_positive_exposure_inr",
+        ),
+    }.get(evidence_type, ())
+    if evidence_type == "incident_memory":
+        return {"count": len(payload.get("items", []))}
+    return {key: payload.get(key) for key in fields if payload.get(key) is not None}
 
 
 @router.get("/{incident_id}/investigation")
@@ -174,9 +265,8 @@ async def investigation_detail(
             {
                 "evidence_id": row.evidence_id,
                 "evidence_type": row.evidence_type,
-                "source": row.source,
                 "strength": row.strength,
-                "payload": row.payload,
+                "summary": _evidence_summary(row.evidence_type, row.payload),
             }
             for row in evidence
         ],
@@ -184,9 +274,6 @@ async def investigation_detail(
             {
                 "agent_name": row.agent_name,
                 "status": row.status,
-                "model_name": row.model_name,
-                "prompt_version": row.prompt_version,
-                "evidence_hash": row.evidence_hash,
                 "payload": _display_payload(row.agent_name, row.payload, verdicts),
             }
             for row in outputs

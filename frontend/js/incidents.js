@@ -47,19 +47,24 @@ function build(main) {
             )
           ),
         ]),
-        el("div", { class: "panel__body panel__body--tight" }, [
-          el("table", { class: "table" }, [
+        el("div", {
+          class: "panel__body panel__body--tight table-scroll",
+          role: "region",
+          "aria-label": "Incidents table",
+          tabindex: "0",
+        }, [
+          el("table", { class: "table incident-table" }, [
             el("thead", {}, [
               el("tr", {}, [
-                el("th", { text: "Incident" }),
-                el("th", { text: "Status" }),
-                el("th", { text: "Severity" }),
-                el("th", { text: "Detected" }),
-                el("th", { text: "Density lift" }),
-                el("th", { text: "Volume lift" }),
-                el("th", { text: "Exposure" }),
-                el("th", { text: "Segments" }),
-                el("th", { text: "" }),
+                el("th", { scope: "col", text: "Incident" }),
+                el("th", { scope: "col", text: "Status" }),
+                el("th", { scope: "col", text: "Severity" }),
+                el("th", { scope: "col", text: "Detected" }),
+                el("th", { scope: "col", text: "Density lift" }),
+                el("th", { scope: "col", text: "Volume lift" }),
+                el("th", { scope: "col", text: "Exposure" }),
+                el("th", { scope: "col", text: "Segments" }),
+                el("th", { scope: "col", text: "Action" }),
               ]),
             ]),
             el("tbody", { id: "incident-rows" }, skeletonRows(6, 9)),
@@ -111,6 +116,7 @@ function renderRows(state) {
   }
   incidents.forEach((incident) => {
     const detector = incident.detector_output || {};
+    const action = incidentAction(incident);
     body.append(
       el("tr", {}, [
         el("td", { class: "mono", text: incident.incident_id }),
@@ -131,19 +137,33 @@ function renderRows(state) {
         el("td", { class: "num", text: fmt.count((incident.segments || []).length) }),
         el("td", {}, [
           el("a", {
-            class: `btn btn--sm ${
-              incident.status === "awaiting_human_review" ? "btn--danger" : ""
-            }`.trim(),
-            href: `/pages/investigation.html?incident=${encodeURIComponent(incident.incident_id)}${
-              incident.status === "awaiting_human_review" ? "#hitl-panel" : ""
-            }`,
-            text:
-              incident.status === "awaiting_human_review"
-                ? "Review decision"
-                : "Investigate",
+            class: `btn btn--sm ${action.variant}`.trim(),
+            href: `/pages/investigation.html?incident=${encodeURIComponent(incident.incident_id)}${action.hash}`,
+            "aria-label": `${action.ariaLabel} incident ${incident.incident_id}`,
+            text: action.label,
           }),
         ]),
       ])
     );
   });
+}
+
+function incidentAction(incident) {
+  if (incident.status === "awaiting_human_review") {
+    return {
+      label: "Review decision",
+      ariaLabel: "Review decision for",
+      variant: "btn--danger",
+      hash: "#hitl-panel",
+    };
+  }
+  if (incident.status === "awaiting_outcome") {
+    return {
+      label: "Record outcome",
+      ariaLabel: "Record outcome for",
+      variant: "btn--warning",
+      hash: "#hitl-panel",
+    };
+  }
+  return { label: "Investigate", ariaLabel: "Investigate", variant: "", hash: "" };
 }

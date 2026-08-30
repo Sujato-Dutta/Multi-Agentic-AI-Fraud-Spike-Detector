@@ -1,4 +1,4 @@
-/** Investigation detail: agent timeline, evidence, responses, HITL panel, audit chain. */
+/** Investigation detail: analyst journey, evidence, responses, and human decision. */
 
 import { api } from "./api.js";
 import { bootstrap } from "./app.js";
@@ -13,13 +13,15 @@ import {
   renderSegments,
 } from "./components/investigation.js";
 import { setState, subscribe } from "./state.js";
-import { el, fmt, toast } from "./ui.js";
+import { el, fmt } from "./ui.js";
 
 const incidentId = new URLSearchParams(window.location.search).get("incident");
+let shouldNavigateToDecision = window.location.hash === "#hitl-panel";
+let loadSequence = 0;
 
 bootstrap({
   title: incidentId ? `Investigation · ${incidentId}` : "Investigation",
-  subtitle: "Claim-level verification, deterministic impact, human authorization",
+  subtitle: "Evidence-backed findings, response options, and human authorization",
   actions: [
     el("a", { class: "btn btn--ghost btn--sm", href: "/pages/incidents.html", text: "Incident queue" }),
   ],
@@ -48,54 +50,56 @@ function build(main) {
   }
 
   main.append(
-    el("div", { class: "page-grid" }, [
+    el("div", { class: "page-grid investigation-layout" }, [
       el("section", { class: "col-8 panel anim-rise", id: "incident-header" }),
 
       el("section", { class: "col-4 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
-          el("div", {}, [el("h2", { text: "Grounding" }), el("p", { text: "Verified claims / material claims" })]),
+          el("div", {}, [
+            el("h2", { text: "Evidence coverage" }),
+            el("p", { text: "Supported findings in this investigation" }),
+          ]),
         ]),
         el("div", { class: "panel__body" }, [
           el("div", { class: "gauge", id: "grounding-wrap" }, [
             el("div", { class: "gauge__ring", id: "grounding-ring" }, [
               el("span", { class: "gauge__value", id: "grounding", text: "—" }),
             ]),
-            el("span", { class: "gauge__label", text: "Grounding score" }),
+            el("span", { class: "gauge__label", text: "Evidence coverage" }),
           ]),
-          el("p", { class: "eyebrow", id: "grounding-note", text: "Awaiting verification output" }),
+          el("p", { class: "eyebrow", id: "grounding-note", text: "Verification in progress" }),
         ]),
       ]),
 
-      el("section", { class: "col-7 panel anim-rise" }, [
+      el("section", { class: "col-12 panel investigation-journey anim-rise" }, [
         el("div", { class: "panel__head" }, [
           el("div", {}, [
-            el("h2", { text: "Agent investigation timeline" }),
-            el("p", { text: "Each stage records its model, prompt version, and evidence hash" }),
+            el("h2", { text: "Investigation journey" }),
+            el("p", { text: "What happened, what each phase established, and what requires a human decision" }),
           ]),
         ]),
-        el("div", { class: "panel__body" }, [el("div", { class: "timeline", id: "agent-timeline" })]),
+        el("div", { class: "panel__body", id: "agent-timeline" }),
       ]),
 
-      el("section", { class: "col-5" }, [
-        el("div", { class: "panel anim-rise", style: "margin-bottom: var(--space-4)" }, [
-          el("div", { class: "panel__head" }, [
-            el("div", {}, [el("h2", { text: "Ranked segments" }), el("p", { text: "Deterministic discovery, no model involved" })]),
-          ]),
-          el("div", { class: "panel__body panel__body--scroll", id: "segment-list" }),
+      el("section", { class: "col-6 panel anim-rise" }, [
+        el("div", { class: "panel__head" }, [
+          el("div", {}, [el("h2", { text: "Affected patterns" }), el("p", { text: "Where risk is most concentrated" })]),
         ]),
-        el("div", { class: "panel anim-rise" }, [
-          el("div", { class: "panel__head" }, [
-            el("div", {}, [el("h2", { text: "Evidence store" }), el("p", { text: "Resolvable evidence records" })]),
-          ]),
-          el("div", { class: "panel__body panel__body--scroll", id: "evidence-list" }),
+        el("div", { class: "panel__body", id: "segment-list" }),
+      ]),
+
+      el("section", { class: "col-6 panel anim-rise" }, [
+        el("div", { class: "panel__head" }, [
+          el("div", {}, [el("h2", { text: "Evidence reviewed" }), el("p", { text: "Records supporting the findings" })]),
         ]),
+        el("div", { class: "panel__body", id: "evidence-list" }),
       ]),
 
       el("section", { class: "col-12 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
           el("div", {}, [
-            el("h2", { text: "Response comparison" }),
-            el("p", { text: "Production policy ranking; the model only explains it" }),
+            el("h2", { text: "Response options" }),
+            el("p", { text: "Ranked actions with rationale and supporting evidence" }),
           ]),
         ]),
         el("div", { class: "panel__body" }, [
@@ -106,25 +110,33 @@ function build(main) {
 
       el("section", { class: "col-5 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
-          el("div", {}, [el("h2", { text: "Deterministic impact" }), el("p", { text: "Computed server-side" })]),
+          el("div", {}, [el("h2", { text: "Impact assessment" }), el("p", { text: "Estimated fraud and customer exposure" })]),
         ]),
         el("div", { class: "panel__body", id: "impact-summary" }),
       ]),
 
       el("section", { class: "col-7 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
-          el("div", {}, [el("h2", { text: "Policy gate" }), el("p", { text: "Deterministic authorization" })]),
+          el("div", {}, [
+            el("h2", { text: "Response safeguards" }),
+            el("p", { text: "Whether the recommendation can proceed to an authorized reviewer" }),
+          ]),
         ]),
         el("div", { class: "panel__body", id: "policy-gate" }),
       ]),
 
-      el("section", { class: "col-6 hitl anim-rise", id: "hitl-panel", tabindex: "-1" }),
+      el("section", {
+        class: "col-7 hitl anim-rise",
+        id: "hitl-panel",
+        tabindex: "-1",
+        "aria-label": "Human decision",
+      }),
 
-      el("section", { class: "col-6 panel anim-rise" }, [
+      el("section", { class: "col-5 panel anim-rise" }, [
         el("div", { class: "panel__head" }, [
-          el("div", {}, [el("h2", { text: "Audit trail" }), el("p", { text: "Append-only decision history" })]),
+          el("div", {}, [el("h2", { text: "Decision history" }), el("p", { text: "Recorded analyst actions and outcomes" })]),
         ]),
-        el("div", { class: "panel__body panel__body--scroll", id: "audit-trail" }),
+        el("div", { class: "panel__body", id: "audit-trail" }),
       ]),
     ])
   );
@@ -134,21 +146,22 @@ function build(main) {
     renderSegments(state);
   });
   subscribe(["investigation"], (state) => {
-    renderAgentTimeline(state);
     renderEvidence(state);
     renderGrounding(state);
   });
-  subscribe(["review"], (state) => {
+  subscribe(["selectedIncident", "investigation", "review", "audit"], renderAgentTimeline);
+  subscribe(["review", "investigation"], (state) => {
     renderResponseComparison(state);
     renderImpact(state);
     renderPolicyGate(state);
-    renderReviewPanel(state);
   });
+  subscribe(["review", "audit", "selectedIncident"], renderReviewPanel);
   subscribe(["audit"], renderAuditTrail);
 }
 
 async function load() {
   if (!incidentId) return;
+  const sequence = ++loadSequence;
   const [incident, investigation, review, audit] = await Promise.all([
     api.incident(incidentId),
     api.investigation(incidentId).catch(() => null),
@@ -158,20 +171,33 @@ async function load() {
     }),
     api.audit(incidentId).catch(() => null),
   ]);
+  if (sequence !== loadSequence) return;
   setState({ selectedIncident: incident, investigation, review, audit });
-  if (review && window.location.hash === "#hitl-panel") {
-    window.requestAnimationFrame(() => {
-      const panel = document.getElementById("hitl-panel");
-      panel?.scrollIntoView({ behavior: "smooth", block: "center" });
-      panel?.focus({ preventScroll: true });
-    });
-  }
+  navigateToActionOnce(review, audit);
   if (!review) {
     const note = document.getElementById("response-assumptions");
     if (note && !note.textContent) {
-      note.textContent = "This incident is not awaiting human review; the recorded decision is in the audit trail.";
+      note.textContent = "This incident has no pending review. Any recorded analyst decision appears in Decision history.";
     }
   }
+}
+
+function navigateToActionOnce(review, audit) {
+  const decisions = audit?.decisions || [];
+  const latest = decisions.length ? decisions.at(-1) : null;
+  const outcomePending = latest?.status === "completed" && !latest.outcome;
+  if ((!review && !outcomePending) || !shouldNavigateToDecision) return;
+  shouldNavigateToDecision = false;
+  window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+  window.requestAnimationFrame(() => {
+    const panel = document.getElementById("hitl-panel");
+    if (!panel) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panel.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    if (!document.activeElement || document.activeElement === document.body) {
+      panel.focus({ preventScroll: true });
+    }
+  });
 }
 
 function renderGrounding(state) {
@@ -181,12 +207,12 @@ function renderGrounding(state) {
   const note = document.getElementById("grounding-note");
   if (!result || !Number.isFinite(result.grounding_score)) {
     setGauge("grounding", NaN);
-    if (note) note.textContent = "Awaiting verification output";
+    if (note) note.textContent = "Verification in progress";
     return;
   }
   setGauge("grounding", result.grounding_score);
   if (note) {
-    const supported = (result.verdicts || []).filter((v) => v.verdict === "supported").length;
-    note.textContent = `${supported}/${(result.verdicts || []).length} claims supported · unsupported claims are stripped from this view`;
+    const supported = (result.verdicts || []).filter((item) => item.verdict === "supported").length;
+    note.textContent = `${fmt.count(supported)} of ${fmt.count((result.verdicts || []).length)} findings supported`;
   }
 }
