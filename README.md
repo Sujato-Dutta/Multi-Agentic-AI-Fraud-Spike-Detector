@@ -8,6 +8,8 @@ The system focuses on **risk density** instead of transaction volume. This matte
 because a busy shopping day and a fraud attack can have similar traffic levels,
 but very different fraud rates.
 
+![Multi-Agentic AI Fraud Spike Detector cover](assets/cover.png)
+
 ## What the project does
 
 - Scores transactions with a calibrated fraud model.
@@ -420,4 +422,6 @@ A few planned items were adjusted during implementation:
 
 ## Author
 
-**Sujato Dutta** — AI Engineer and Researcher
+**Sujato Dutta**<br>
+AI Engineer | Researcher<br>
+[LinkedIn](https://www.linkedin.com/in/sujato-dutta/)
